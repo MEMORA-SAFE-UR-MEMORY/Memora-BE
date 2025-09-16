@@ -1,0 +1,6 @@
+@Memora.BackEnd.Api_HostAddress = http://localhost:5083
+
+GET {{Memora.BackEnd.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
