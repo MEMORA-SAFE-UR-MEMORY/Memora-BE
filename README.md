@@ -1,1 +1,2 @@
 # Memora-BE
+Một nền tảng website và ứng dụng di động Memora, kết nối người dùng với không gian lưu giữ ký ức cá nhân và cộng đồng. Mô hình kinh doanh chính là B2C, tập trung vào việc cung cấp giải pháp sáng tạo để lưu giữ, tổ chức, và chia sẻ ký ức thông qua giao diện độc đáo.
