@@ -24,7 +24,7 @@ namespace Memora.BackEnd.Services.Services
 			if (user is null) return null;
 			if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash)) return null;
 
-			return GenerateJwt(user.Id, user.PasswordHash, user.RoleId);	
+			return GenerateJwt(user.Id, user.UserName, user.RoleId);	
 
 		}
 
