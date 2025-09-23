@@ -41,7 +41,7 @@ namespace Memora.BackEnd.Services.Services
 			{
 			new Claim(JwtRegisteredClaimNames.Sub, id.ToString()),
 			new Claim("username", userName),
-			new Claim("roleid", roleId.ToString()),
+			new Claim("role_id", roleId.ToString()),
 		};
 
 			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSecret));
