@@ -3,6 +3,6 @@
 	public interface IUserService
 	{
 		public Task<string?> LoginAsync(string userName, string password);
-		public Task RegisterAsync(string userName, string password);
+		public Task<int> RegisterAsync(string userName, string password);
 	}
 }

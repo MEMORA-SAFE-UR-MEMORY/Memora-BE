@@ -1,10 +1,10 @@
-﻿using Memora.BackEnd.Repositories.Entities;
+﻿using Memora.BackEnd.Repositories.Models;
 
 namespace Memora.BackEnd.Repositories.Interfaces
 {
 	public interface IUserRepository
 	{
 		Task<User?> GetByUsernameAsync(string userName);
-		Task CreateUserAsync(User user);
+		Task<int> CreateUserAsync(User user);
 	}
 }
