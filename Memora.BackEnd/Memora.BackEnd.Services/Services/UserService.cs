@@ -1,22 +1,22 @@
-﻿using Memora.BackEnd.Repositories.Entities;
+﻿using Memora.BackEnd.Repositories.Base;
 using Memora.BackEnd.Repositories.Interfaces;
+using Memora.BackEnd.Repositories.Models;
 using Memora.BackEnd.Services.Interfaces;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+using Memora.BackEnd.Services.Libraries;
+using Microsoft.Extensions.Options;
 
 namespace Memora.BackEnd.Services.Services
 {
 	public class UserService : IUserService
 	{
 		private readonly IUserRepository _userRepository;
-		private readonly string _jwtSecret;
+		private readonly JWTSettings _jwtSettings;
 
-		public UserService(IUserRepository userRepository, string jwtSecret)
+		public UserService(IUserRepository userRepository, IOptions<JWTSettings> jwtSettings)
 		{
 			_userRepository = userRepository;
-			_jwtSecret = jwtSecret;
+			_jwtSettings = jwtSettings.Value
+				?? throw new ArgumentNullException(nameof(jwtSettings), "JWT settings is not configured");
 		}
 		public async Task<string?> LoginAsync(string userName, string password)
 		{
@@ -24,38 +24,23 @@ namespace Memora.BackEnd.Services.Services
 			if (user is null) return null;
 			if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash)) return null;
 
-			return GenerateJwt(user.Id, user.UserName, user.RoleId);	
-
+			return Authentication.CreateAccessToken(user, _jwtSettings);
 		}
 
-		public async Task RegisterAsync(string userName, string password)
+		public async Task<int> RegisterAsync(string userName, string password)
 		{
-			var hash = BCrypt.Net.BCrypt.HashPassword(password);
-			var user = new User(Guid.NewGuid(), userName, hash, 1);
-			await _userRepository.CreateUserAsync(user);
-		}
+			var existingUser = await _userRepository.GetByUsernameAsync(userName);
+			if (existingUser is not null) return -1;
 
-		private string GenerateJwt(Guid? id, string userName, int roleId)
-		{
-			var claims = new[]
+			var passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
+			var user = new User()
 			{
-			new Claim(JwtRegisteredClaimNames.Sub, id.ToString()),
-			new Claim("username", userName),
-			new Claim("role_id", roleId.ToString()),
-		};
+				Username = userName,
+				PasswordHash = passwordHash,
+				RoleId = 1,
+			};
 
-			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSecret));
-			var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-			var token = new JwtSecurityToken(
-				issuer: "memora-api",
-				audience: "memora-client",
-				claims: claims,
-				expires: DateTime.UtcNow.AddDays(7),
-				signingCredentials: creds);
-
-			var result = new JwtSecurityTokenHandler().WriteToken(token);
-			return result;
+			return await _userRepository.CreateUserAsync(user);
 		}
 	}
 }
