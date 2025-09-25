@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Memora.BackEnd.Repositories.Models;
+﻿namespace Memora.BackEnd.Repositories.Models;
 
 public partial class Order
 {
     public long Id { get; set; }
 
-    public long Status { get; set; }
+    public string Status { get; set; } = null!;
 
     public decimal TotalPrice { get; set; }
 

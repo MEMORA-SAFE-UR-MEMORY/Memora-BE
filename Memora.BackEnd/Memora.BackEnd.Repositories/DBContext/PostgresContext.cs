@@ -1,4 +1,6 @@
-﻿using Memora.BackEnd.Repositories.Models;
+﻿using System;
+using System.Collections.Generic;
+using Memora.BackEnd.Repositories.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Memora.BackEnd.Repositories.DBContext;
@@ -328,7 +330,9 @@ public partial class PostgresContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(now() AT TIME ZONE 'utc'::text)")
                 .HasColumnName("created_at");
-            entity.Property(e => e.Status).HasColumnName("status");
+            entity.Property(e => e.Status)
+                .HasDefaultValueSql("'đã đặt'::text")
+                .HasColumnName("status");
             entity.Property(e => e.TotalPrice).HasColumnName("total_price");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(now() AT TIME ZONE 'utc'::text)")

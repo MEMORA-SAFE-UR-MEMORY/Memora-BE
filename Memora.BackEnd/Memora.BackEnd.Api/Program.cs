@@ -27,6 +27,9 @@ builder.Services.Configure<JWTSettings>(builder.Configuration.GetSection("JwtSet
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+
 // Add services to the container
 builder.Services.AddControllers();
 
