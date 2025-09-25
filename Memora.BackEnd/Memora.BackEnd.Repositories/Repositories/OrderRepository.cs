@@ -22,7 +22,21 @@ namespace Memora.BackEnd.Repositories.Repositories
 
         public async Task<List<Order>> GetAll()
         {
-            return await _context.Orders.Include(a => a.OrderAlbums).Include(a => a.User).ToListAsync();
+            return await _context.Orders
+                .Include(o => o.User)
+                .Include(o => o.OrderAlbums)
+                    .ThenInclude(oa => oa.Album)
+                        .ThenInclude(a => a.Template)
+                .ToListAsync();
+        }
+
+
+        public async Task<Order?> GetOrderById(long id)
+        {
+            return await _context.Orders.Include(o => o.User)
+                .Include(o => o.OrderAlbums)
+                    .ThenInclude(oa => oa.Album)
+                        .ThenInclude(a => a.Template).FirstOrDefaultAsync(a => a.Id == id);
         }
 
         public async Task<int> UpdateOrderAsync(Order order)

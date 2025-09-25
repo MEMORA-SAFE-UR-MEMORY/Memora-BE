@@ -23,11 +23,27 @@ namespace Memora.BackEnd.Services.Services
                 Status = o.Status,
                 TotalPrice = o.TotalPrice,
                 CreatedAt = o.CreatedAt,
-                UserId = o.UserId,
+                UserInfo = new UserOrderDto
+                {
+                    Id = o.UserId,
+                    Username = o.User.Username,
+                    Fullname = o.User.Fullname,
+                    Address = o.User.Address,
+                    PhoneNumber = o.User.PhoneNumber
+                },
                 OrderAlbums = o.OrderAlbums.Select(oa => new OrderAlbumDto
                 {
                     Id = oa.Id,
-                    AlbumId = oa.AlbumId,
+                    AlbumDto = new AlbumDto
+                    {
+                        Id = oa.Album.Id,
+                        Name = oa.Album.Name,
+                        Template = new AlbumTemplateDto
+                        {
+                            Id = oa.Album.Template.Id,
+                            Name = oa.Album.Template.Name
+                        }
+                    },
                     Price = oa.Price,
                     Quantity = oa.Quantity
                 }).ToList()
@@ -61,6 +77,42 @@ namespace Memora.BackEnd.Services.Services
             };
 
             return await _orderRepository.UpdateOrderAsync(order);
+        }
+
+        public async Task<OrderDto?> GetOrderById(long id)
+        {
+            var o = await _orderRepository.GetOrderById(id);
+
+            return new OrderDto {
+                Id = o.Id,
+                Status = o.Status,
+                TotalPrice = o.TotalPrice,
+                CreatedAt = o.CreatedAt,
+                UserInfo = new UserOrderDto
+                {
+                    Id = o.UserId,
+                    Username = o.User.Username,
+                    Fullname = o.User.Fullname,
+                    Address = o.User.Address,
+                    PhoneNumber = o.User.PhoneNumber
+                },
+                OrderAlbums = o.OrderAlbums.Select(oa => new OrderAlbumDto
+                {
+                    Id = oa.Id,
+                    AlbumDto = new AlbumDto
+                    {
+                        Id = oa.Album.Id,
+                        Name = oa.Album.Name,
+                        Template = new AlbumTemplateDto
+                        {
+                            Id = oa.Album.Template.Id,
+                            Name = oa.Album.Template.Name
+                        }
+                    },
+                    Price = oa.Price,
+                    Quantity = oa.Quantity
+                }).ToList(),
+            };
         }
     }
 }

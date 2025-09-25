@@ -1,10 +1,4 @@
-﻿using Memora.BackEnd.Repositories.Models;
-using Memora.BackEnd.Services.Dtos;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Memora.BackEnd.Services.Dtos;
 
 namespace Memora.BackEnd.Services.Interfaces
 {
@@ -13,5 +7,6 @@ namespace Memora.BackEnd.Services.Interfaces
         Task<List<OrderDto>> GetAllAsync();
         Task<int> CreateOrderAsync(CreateOrderRequest request);
         Task<int> UpdateOrderAsync(UpdateOrderRequest request);
+        Task<OrderDto?> GetOrderById(long id);
     }
 }

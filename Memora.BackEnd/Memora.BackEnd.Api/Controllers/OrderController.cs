@@ -25,6 +25,19 @@ namespace Memora.BackEnd.Api.Controllers
             return Ok(orders);
         }
 
+        [HttpGet("getById/{id:long}")]
+        public async Task<IActionResult> GetOrderById([FromRoute]long id)
+        {
+            var order = await _orderService.GetOrderById(id);
+
+            if (order == null)
+            {
+                return Ok(new { message = "Không tìm thấy order :(" });
+            }
+
+            return Ok(order);
+        }
+
         [HttpPost("create")]
         public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request)
         {

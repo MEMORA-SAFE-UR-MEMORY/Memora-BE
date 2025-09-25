@@ -6,11 +6,27 @@ namespace Memora.BackEnd.Services.Dtos
     {
         public long Id { get; set; }
 
+        public AlbumDto? AlbumDto { get; set; }
+
         public long Quantity { get; set; }
 
         public decimal Price { get; set; }
+    }
 
-        public long AlbumId { get; set; }
+    public class AlbumDto
+    {
+        public long Id { get; set; }
+
+        public string Name { get; set; } = null!;
+
+        public AlbumTemplateDto? Template { get; set; }
+    }
+
+    public class AlbumTemplateDto
+    {
+        public long Id { get; set; }
+
+        public string Name { get; set; } = null!;
     }
 
     public class OrderDto
@@ -19,7 +35,7 @@ namespace Memora.BackEnd.Services.Dtos
         public string Status { get; set; } = null!;
         public decimal TotalPrice { get; set; }
         public DateTime CreatedAt { get; set; }
-        public Guid UserId { get; set; }
+        public UserOrderDto? UserInfo { get; set; }
         public List<OrderAlbumDto> OrderAlbums { get; set; } = new();
     }
 
