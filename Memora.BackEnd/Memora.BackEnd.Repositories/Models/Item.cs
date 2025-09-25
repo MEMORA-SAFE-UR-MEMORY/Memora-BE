@@ -17,11 +17,17 @@ public partial class Item
 
     public string ItemImagePath { get; set; } = null!;
 
+    public long DimensionId { get; set; }
+
+    public long? ThemeId { get; set; }
+
     public virtual Category Category { get; set; } = null!;
+
+    public virtual ItemDimension Dimension { get; set; } = null!;
 
     public virtual ICollection<InventoryItem> InventoryItems { get; set; } = new List<InventoryItem>();
 
     public virtual ICollection<RoomItem> RoomItems { get; set; } = new List<RoomItem>();
 
-    public virtual ICollection<ThemeItem> ThemeItems { get; set; } = new List<ThemeItem>();
+    public virtual Theme? Theme { get; set; }
 }

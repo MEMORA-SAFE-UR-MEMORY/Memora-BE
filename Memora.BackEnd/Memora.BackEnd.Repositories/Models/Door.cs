@@ -15,5 +15,5 @@ public partial class Door
 
     public virtual ICollection<Room> Rooms { get; set; } = new List<Room>();
 
-    public virtual ICollection<ThemeItem> ThemeItems { get; set; } = new List<ThemeItem>();
+    public virtual Theme? Theme { get; set; }
 }
