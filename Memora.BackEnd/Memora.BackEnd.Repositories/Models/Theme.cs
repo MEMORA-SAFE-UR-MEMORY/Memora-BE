@@ -17,13 +17,7 @@ public partial class Theme
 
     public string FloorUrl { get; set; } = null!;
 
-    public long DoorId { get; set; }
-
-    public virtual Door Door { get; set; } = null!;
-
-    public virtual ICollection<Item> Items { get; set; } = new List<Item>();
-
     public virtual ICollection<Room> Rooms { get; set; } = new List<Room>();
 
-    public virtual ICollection<UserTheme> UserThemes { get; set; } = new List<UserTheme>();
+    public virtual ICollection<ThemeItem> ThemeItems { get; set; } = new List<ThemeItem>();
 }

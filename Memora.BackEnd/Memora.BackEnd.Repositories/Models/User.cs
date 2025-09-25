@@ -33,7 +33,5 @@ public partial class User
 
     public virtual ICollection<Room> Rooms { get; set; } = new List<Room>();
 
-    public virtual ICollection<UserTheme> UserThemes { get; set; } = new List<UserTheme>();
-
     public virtual Wallet? Wallet { get; set; }
 }

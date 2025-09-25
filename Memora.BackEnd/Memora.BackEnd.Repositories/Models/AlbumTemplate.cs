@@ -11,9 +11,11 @@ public partial class AlbumTemplate
 
     public string? Description { get; set; }
 
+    public long PageNumber { get; set; }
+
+    public string LayoutUrl { get; set; } = null!;
+
     public DateTime CreatedAt { get; set; }
 
     public virtual ICollection<Album> Albums { get; set; } = new List<Album>();
-
-    public virtual ICollection<TemplatePage> TemplatePages { get; set; } = new List<TemplatePage>();
 }
