@@ -2,7 +2,8 @@
 {
 	public interface IUserService
 	{
-		public Task<string?> LoginAsync(string userName, string password);
+		public Task<(string accessToken, string refreshToken)?> LoginAsync(string userName, string password);
 		public Task<int> RegisterAsync(string userName, string password);
+		public Task<(string accessToken, string refreshToken)?> RefreshTokenAsync(string refreshToken);
 	}
 }

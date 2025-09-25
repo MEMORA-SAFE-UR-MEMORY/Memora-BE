@@ -1,5 +1,6 @@
 ﻿using Memora.BackEnd.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 
 namespace Memora.BackEnd.Api.Controllers
@@ -14,9 +15,9 @@ namespace Memora.BackEnd.Api.Controllers
 		[HttpGet("login")]	
 		public async Task<IActionResult> Login([FromQuery] string username, [FromQuery] string password)
 		{
-			var token = await _userService.LoginAsync(username, password);
-			if (token == null) return BadRequest("Invalid login");
-			return Ok(new { token });
+			var tokens = await _userService.LoginAsync(username, password);
+			if (tokens == null) return BadRequest("Invalid login");
+			return Ok(new { accessToken = tokens.Value.accessToken, refreshToken = tokens.Value.refreshToken });
 		}
 
 		[HttpPost("register")]
@@ -27,5 +28,22 @@ namespace Memora.BackEnd.Api.Controllers
 			return Ok("User registered");
 		}
 
+		[HttpPost("refresh")]
+		public async Task<IActionResult> Refresh([FromQuery][Required] string request)
+		{
+			if (string.IsNullOrWhiteSpace(request))
+			{
+				return BadRequest("Refresh token is required.");
+			}
+
+			var newTokens = await _userService.RefreshTokenAsync(request);
+
+			if (newTokens == null)
+			{
+				return Unauthorized("Invalid or expired refresh token.");
+			}
+
+			return Ok(new { accessToken = newTokens.Value.accessToken, refreshToken = newTokens.Value.refreshToken });
+		}
 	}
 }
