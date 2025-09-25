@@ -539,6 +539,7 @@ public partial class PostgresContext : DbContext
             entity.Property(e => e.PhoneNumber)
                 .HasColumnType("character varying")
                 .HasColumnName("phone_number");
+            entity.Property(e => e.RefreshToken).HasColumnName("refresh_token");
             entity.Property(e => e.RoleId).HasColumnName("role_id");
             entity.Property(e => e.Username)
                 .HasColumnType("character varying")

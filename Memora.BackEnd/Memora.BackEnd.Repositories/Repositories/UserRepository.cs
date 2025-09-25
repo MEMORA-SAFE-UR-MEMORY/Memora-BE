@@ -22,5 +22,16 @@ namespace Memora.BackEnd.Repositories.Repositories
 			await _context.Users.AddAsync(user);
 			return await _context.SaveChangesAsync();
 		}
+
+		public async Task<int> UpdateUserAsync(User user)
+		{
+			_context.Users.Update(user);
+			return await _context.SaveChangesAsync();
+		}
+
+		public async Task<User?> GetByRefreshTokenAsync(string refreshToken)
+		{
+			return await _context.Users.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
+		}
 	}
 }

@@ -81,5 +81,34 @@ namespace Memora.BackEnd.Services.Libraries
 			var roleClaim = user.Claims.FirstOrDefault(c => c.Type == "role");
 			return int.TryParse(roleClaim?.Value, out int role) ? role : 0;
 		}
+
+		public static ClaimsPrincipal? ValidateToken(string token, JWTSettings jwtSettings, bool validateLifetime = true)
+		{
+			var tokenHandler = new JwtSecurityTokenHandler();
+			var key = Encoding.UTF8.GetBytes(jwtSettings.SecretKey
+				?? throw new ArgumentNullException(nameof(jwtSettings.SecretKey)));
+
+			var parameters = new TokenValidationParameters
+			{
+				ValidateIssuer = true,
+				ValidateAudience = true,
+				ValidateIssuerSigningKey = true,
+				ValidIssuer = jwtSettings.Issuer,
+				ValidAudience = jwtSettings.Audience,
+				IssuerSigningKey = new SymmetricSecurityKey(key),
+				ValidateLifetime = validateLifetime,
+				ClockSkew = TimeSpan.Zero
+			};
+
+			try
+			{
+				var principal = tokenHandler.ValidateToken(token, parameters, out SecurityToken validatedToken);
+				return principal;
+			}
+			catch
+			{
+				return null;
+			}
+		}
 	}
 }

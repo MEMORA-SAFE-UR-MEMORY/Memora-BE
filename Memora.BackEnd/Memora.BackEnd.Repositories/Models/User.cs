@@ -23,6 +23,8 @@ public partial class User
 
     public string? Fullname { get; set; }
 
+    public string? RefreshToken { get; set; }
+
     public virtual ICollection<Album> Albums { get; set; } = new List<Album>();
 
     public virtual Inventory? Inventory { get; set; }

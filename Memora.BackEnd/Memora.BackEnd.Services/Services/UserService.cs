@@ -18,13 +18,18 @@ namespace Memora.BackEnd.Services.Services
 			_jwtSettings = jwtSettings.Value
 				?? throw new ArgumentNullException(nameof(jwtSettings), "JWT settings is not configured");
 		}
-		public async Task<string?> LoginAsync(string userName, string password)
+		public async Task<(string accessToken, string refreshToken)?> LoginAsync(string userName, string password)
 		{
 			var user = await _userRepository.GetByUsernameAsync(userName);
 			if (user is null) return null;
 			if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash)) return null;
 
-			return Authentication.CreateAccessToken(user, _jwtSettings);
+			var accessToken = Authentication.CreateAccessToken(user, _jwtSettings);
+			var refreshToken = Authentication.CreateRefreshToken(user, _jwtSettings);
+			user.RefreshToken = refreshToken;
+			var result = await _userRepository.UpdateUserAsync(user);
+			if (result < 0) return null;
+			return (accessToken, refreshToken);
 		}
 
 		public async Task<int> RegisterAsync(string userName, string password)
@@ -42,5 +47,36 @@ namespace Memora.BackEnd.Services.Services
 
 			return await _userRepository.CreateUserAsync(user);
 		}
+
+		public async Task<(string accessToken, string refreshToken)?> RefreshTokenAsync(string refreshToken)
+		{
+			var principal = Authentication.ValidateToken(refreshToken, _jwtSettings);
+			if (principal == null)
+			{
+				return null; 
+			}
+
+			var tokenType = principal.Claims.FirstOrDefault(c => c.Type == "token_type")?.Value;
+			if (tokenType != "refresh")
+			{
+				return null;
+			}
+
+			var user = await _userRepository.GetByRefreshTokenAsync(refreshToken);
+
+			if (user == null)
+			{
+				return null;
+			}
+
+			var newAccessToken = Authentication.CreateAccessToken(user, _jwtSettings);
+			var newRefreshToken = Authentication.CreateRefreshToken(user, _jwtSettings);
+
+			user.RefreshToken = newRefreshToken;
+			await _userRepository.UpdateUserAsync(user);
+
+			return (newAccessToken, newRefreshToken);
+		}
 	}
 }
+
