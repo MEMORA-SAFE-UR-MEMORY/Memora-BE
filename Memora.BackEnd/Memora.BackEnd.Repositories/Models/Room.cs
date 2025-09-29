@@ -17,6 +17,8 @@ public partial class Room
 
     public long DoorId { get; set; }
 
+    public string Type { get; set; } = null!;
+
     public virtual Door Door { get; set; } = null!;
 
     public virtual ICollection<Memory> Memories { get; set; } = new List<Memory>();

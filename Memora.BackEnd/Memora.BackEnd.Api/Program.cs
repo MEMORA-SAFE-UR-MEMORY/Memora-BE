@@ -12,33 +12,44 @@ var builder = WebApplication.CreateBuilder(args);
 var connString = builder.Configuration.GetConnectionString("DefaultConnection")
 	?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-// Create a singleton NpgsqlDataSource for the entire application
 var dataSourceBuilder = new NpgsqlDataSourceBuilder(connString);
 var dataSource = dataSourceBuilder.Build();
 
-// Register DbContext to use the singleton NpgsqlDataSource and centralize configuration
 builder.Services.AddDbContext<PostgresContext>(options =>
 {
 	options.UseNpgsql(dataSource)
 		   .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 });
 
+// Settings
 builder.Services.Configure<JWTSettings>(builder.Configuration.GetSection("JwtSettings"));
+// No need to configure RevenueCatSettings here as we are injecting IConfiguration directly.
+
+// Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IUserService, UserService>();
-
-builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IThemeRepository, ThemeRepository>();
+builder.Services.AddScoped<IUserThemeRepository, UserThemeRepository>();
 
-// Add services to the container
-builder.Services.AddControllers();
+
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IPurchaseService, PurchaseService>();
+
+
+builder.Services.AddControllers(options =>
+{
+}).AddJsonOptions(options =>
+{
+	options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+});
+
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
 	app.UseSwagger();
@@ -46,6 +57,16 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.Use(async (context, next) =>
+{
+	if (context.Request.Path.StartsWithSegments("/api/webhooks/revenuecat"))
+	{
+		context.Request.EnableBuffering();
+	}
+	await next();
+});
+
 
 app.UseAuthentication();
 app.UseAuthorization();

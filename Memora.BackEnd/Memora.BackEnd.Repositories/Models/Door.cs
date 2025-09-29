@@ -11,9 +11,9 @@ public partial class Door
 
     public DateTime CreatedAt { get; set; }
 
-    public string ColorHex { get; set; } = null!;
+    public string? ColorHex { get; set; }
 
     public virtual ICollection<Room> Rooms { get; set; } = new List<Room>();
 
-    public virtual Theme? Theme { get; set; }
+    public virtual ICollection<Theme> Themes { get; set; } = new List<Theme>();
 }

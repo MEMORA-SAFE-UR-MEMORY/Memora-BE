@@ -5,7 +5,7 @@ namespace Memora.BackEnd.Repositories.Models;
 
 public partial class Wallet
 {
-    public string Id { get; set; } = null!;
+    public long Id { get; set; }
 
     public decimal Puzzles { get; set; }
 
@@ -14,6 +14,8 @@ public partial class Wallet
     public DateTime? UpdatedAt { get; set; }
 
     public Guid UserId { get; set; }
+
+    public DateTime? LastDailyClaimAt { get; set; }
 
     public virtual User User { get; set; } = null!;
 }
