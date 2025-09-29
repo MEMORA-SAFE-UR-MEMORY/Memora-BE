@@ -9,5 +9,6 @@ namespace Memora.BackEnd.Repositories.Interfaces
 		Task<int> UpdateUserAsync(User user);
 		Task<User?> GetByRefreshTokenAsync(string refreshToken);
 		Task<List<User>> GetAllUsersAsync();
-	}
+		Task<int> BanUser(Guid userId);
+    }
 }

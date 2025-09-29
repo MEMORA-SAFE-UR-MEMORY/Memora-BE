@@ -57,5 +57,14 @@ namespace Memora.BackEnd.Api.Controllers
 			var users = await _userService.GetUsersAsync();
 			return Ok(users);
 		}
-	}
+
+        [HttpGet("{id:Guid}/ban")]
+		[Authorize(Roles = "1")]
+        public async Task<IActionResult> BanUser([FromRoute] Guid id)
+        {
+			var result = await _userService.BanUser(id);
+			if (result == 0) return BadRequest("Không tìm thấy user");
+			return Ok("Đã ban thành công");
+        }
+    }
 }

@@ -93,6 +93,11 @@ namespace Memora.BackEnd.Services.Services
 
 			return dtos;
         }
+
+        public async Task<int> BanUser(Guid userId)
+        {
+			return await _userRepository.BanUser(userId);
+        }
     }
 }
 

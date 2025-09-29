@@ -38,5 +38,14 @@ namespace Memora.BackEnd.Repositories.Repositories
         {
             return await _context.Users.ToListAsync();
         }
+
+        public async Task<int> BanUser(Guid userId)
+        {
+			var user = await _context.Users.FirstOrDefaultAsync(u=> u.Id == userId);
+			if (user == null)
+				return 0;
+			user.Status = "Banned";
+			return await UpdateUserAsync(user);
+        }
     }
 }
