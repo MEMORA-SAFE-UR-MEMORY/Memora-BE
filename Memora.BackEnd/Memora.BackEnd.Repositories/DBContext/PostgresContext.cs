@@ -64,10 +64,6 @@ public partial class PostgresContext : DbContext
 
     public virtual DbSet<Wallet> Wallets { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseNpgsql("User Id=postgres.yzzispiaqactvbvsjwcw;Password=Hellomemora12345@;Server=aws-0-ap-southeast-1.pooler.supabase.com;Port=6543;Database=postgres;SSL Mode=Require;Trust Server Certificate=true;Keepalive=30;Timeout=15;CommandTimeout=30;Pooling=false");
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder

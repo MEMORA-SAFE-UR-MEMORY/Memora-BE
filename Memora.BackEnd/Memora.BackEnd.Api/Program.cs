@@ -1,4 +1,5 @@
-﻿using Memora.BackEnd.Repositories.Base;
+﻿// Memora.BackEnd/Memora.BackEnd.Api/Program.cs
+using Memora.BackEnd.Repositories.Base;
 using Memora.BackEnd.Repositories.DBContext;
 using Memora.BackEnd.Repositories.Interfaces;
 using Memora.BackEnd.Repositories.Repositories;
@@ -34,15 +35,31 @@ builder.Services.AddDbContext<PostgresContext>(options =>
 		   .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 });
 
+// Settings
 builder.Services.Configure<JWTSettings>(builder.Configuration.GetSection("JwtSettings"));
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IUserService, UserService>();
 
-builder.Services.AddScoped<IOrderService, OrderService>();
+// Repositories
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IThemeRepository, ThemeRepository>();
+builder.Services.AddScoped<IUserThemeRepository, UserThemeRepository>();
+// --- ĐĂNG KÝ REPOSITORIES MỚI ---
+builder.Services.AddScoped<IItemRepository, ItemRepository>();
+builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
+
+
+// Services
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IPurchaseService, PurchaseService>();
+
 
 // Add services to the container
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+	options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+});
+
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -59,6 +76,16 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.Use(async (context, next) =>
+{
+	if (context.Request.Path.StartsWithSegments("/api/webhooks/revenuecat"))
+	{
+		context.Request.EnableBuffering();
+	}
+	await next();
+});
+
 
 app.UseAuthentication();
 app.UseAuthorization();
