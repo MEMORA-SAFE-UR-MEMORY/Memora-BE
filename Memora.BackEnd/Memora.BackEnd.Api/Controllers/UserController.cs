@@ -58,8 +58,7 @@ namespace Memora.BackEnd.Api.Controllers
 			return Ok(users);
 		}
 
-        [HttpGet("{id:Guid}/ban")]
-		[Authorize(Roles = "1")]
+        [HttpPost("{id:Guid}/ban")]
         public async Task<IActionResult> BanUser([FromRoute] Guid id)
         {
 			var result = await _userService.BanUser(id);
