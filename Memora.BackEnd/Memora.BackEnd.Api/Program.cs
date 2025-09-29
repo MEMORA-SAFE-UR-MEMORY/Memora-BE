@@ -1,4 +1,5 @@
-﻿using Memora.BackEnd.Repositories.Base;
+﻿// Memora.BackEnd/Memora.BackEnd.Api/Program.cs
+using Memora.BackEnd.Repositories.Base;
 using Memora.BackEnd.Repositories.DBContext;
 using Memora.BackEnd.Repositories.Interfaces;
 using Memora.BackEnd.Repositories.Repositories;
@@ -12,9 +13,11 @@ var builder = WebApplication.CreateBuilder(args);
 var connString = builder.Configuration.GetConnectionString("DefaultConnection")
 	?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
+// Create a singleton NpgsqlDataSource for the entire application
 var dataSourceBuilder = new NpgsqlDataSourceBuilder(connString);
 var dataSource = dataSourceBuilder.Build();
 
+// Register DbContext to use the singleton NpgsqlDataSource and centralize configuration
 builder.Services.AddDbContext<PostgresContext>(options =>
 {
 	options.UseNpgsql(dataSource)
@@ -23,23 +26,25 @@ builder.Services.AddDbContext<PostgresContext>(options =>
 
 // Settings
 builder.Services.Configure<JWTSettings>(builder.Configuration.GetSection("JwtSettings"));
-// No need to configure RevenueCatSettings here as we are injecting IConfiguration directly.
 
 // Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IThemeRepository, ThemeRepository>();
 builder.Services.AddScoped<IUserThemeRepository, UserThemeRepository>();
+// --- ĐĂNG KÝ REPOSITORIES MỚI ---
+builder.Services.AddScoped<IItemRepository, ItemRepository>();
+builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 
 
+// Services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPurchaseService, PurchaseService>();
 
 
-builder.Services.AddControllers(options =>
-{
-}).AddJsonOptions(options =>
+// Add services to the container
+builder.Services.AddControllers().AddJsonOptions(options =>
 {
 	options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
 });
@@ -50,6 +55,7 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
 	app.UseSwagger();

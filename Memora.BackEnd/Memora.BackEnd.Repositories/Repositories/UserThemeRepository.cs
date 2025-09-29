@@ -22,7 +22,7 @@ namespace Memora.BackEnd.Repositories.Repositories
 
 		public async Task<bool> UserOwnsThemeAsync(Guid userId, long themeId)
 		{
-			return await _context.UserThemes
+			return await _context.UserThemes.Include(u => u.User).Include(t => t.Theme)
 				.AnyAsync(ut => ut.UserId == userId && ut.ThemeId == themeId);
 		}
 	}
