@@ -17,9 +17,11 @@ public partial class Theme
 
     public string FloorUrl { get; set; } = null!;
 
-    public long DoorId { get; set; }
+    public long? DoorId { get; set; }
 
-    public virtual Door Door { get; set; } = null!;
+    public string? RevenueCatProductId { get; set; }
+
+    public virtual Door? Door { get; set; }
 
     public virtual ICollection<Item> Items { get; set; } = new List<Item>();
 

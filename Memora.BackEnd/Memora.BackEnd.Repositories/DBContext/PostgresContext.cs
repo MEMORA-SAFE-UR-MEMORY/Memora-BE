@@ -26,6 +26,8 @@ public partial class PostgresContext : DbContext
 
     public virtual DbSet<Door> Doors { get; set; }
 
+    public virtual DbSet<FrameSlot> FrameSlots { get; set; }
+
     public virtual DbSet<Inventory> Inventories { get; set; }
 
     public virtual DbSet<InventoryItem> InventoryItems { get; set; }
@@ -40,17 +42,23 @@ public partial class PostgresContext : DbContext
 
     public virtual DbSet<OrderAlbum> OrderAlbums { get; set; }
 
+    public virtual DbSet<RevenuecatWebhookLog> RevenuecatWebhookLogs { get; set; }
+
     public virtual DbSet<Role> Roles { get; set; }
 
     public virtual DbSet<Room> Rooms { get; set; }
 
     public virtual DbSet<RoomItem> RoomItems { get; set; }
 
+    public virtual DbSet<SlotMemory> SlotMemories { get; set; }
+
     public virtual DbSet<TemplatePage> TemplatePages { get; set; }
 
     public virtual DbSet<Theme> Themes { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
+
+    public virtual DbSet<UserEntitlement> UserEntitlements { get; set; }
 
     public virtual DbSet<UserTheme> UserThemes { get; set; }
 
@@ -187,6 +195,31 @@ public partial class PostgresContext : DbContext
             entity.Property(e => e.ImgUrl).HasColumnName("img_url");
         });
 
+        modelBuilder.Entity<FrameSlot>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("frame_slots_pkey");
+
+            entity.ToTable("frame_slots");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("created_at");
+            entity.Property(e => e.H).HasColumnName("h");
+            entity.Property(e => e.ItemId).HasColumnName("item_id");
+            entity.Property(e => e.Rotation).HasColumnName("rotation");
+            entity.Property(e => e.Shape)
+                .HasColumnType("jsonb")
+                .HasColumnName("shape");
+            entity.Property(e => e.W).HasColumnName("w");
+            entity.Property(e => e.X).HasColumnName("x");
+            entity.Property(e => e.Y).HasColumnName("y");
+
+            entity.HasOne(d => d.Item).WithMany(p => p.FrameSlots)
+                .HasForeignKey(d => d.ItemId)
+                .HasConstraintName("frame_slots_item_id_fkey");
+        });
+
         modelBuilder.Entity<Inventory>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("inventories_pkey");
@@ -263,6 +296,7 @@ public partial class PostgresContext : DbContext
                 .HasColumnName("name");
             entity.Property(e => e.PuzzlePrice).HasColumnName("puzzle_price");
             entity.Property(e => e.ThemeId).HasColumnName("theme_id");
+            entity.Property(e => e.Type).HasColumnName("type");
 
             entity.HasOne(d => d.Category).WithMany(p => p.Items)
                 .HasForeignKey(d => d.CategoryId)
@@ -270,6 +304,7 @@ public partial class PostgresContext : DbContext
 
             entity.HasOne(d => d.Dimension).WithMany(p => p.Items)
                 .HasForeignKey(d => d.DimensionId)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("items_dimension_id_fkey");
 
             entity.HasOne(d => d.Theme).WithMany(p => p.Items)
@@ -373,6 +408,30 @@ public partial class PostgresContext : DbContext
                 .HasConstraintName("order_albums_order_id_fkey");
         });
 
+        modelBuilder.Entity<RevenuecatWebhookLog>(entity =>
+        {
+            entity.HasKey(e => e.EventId).HasName("revenue_cat_webhook_og_pkey");
+
+            entity.ToTable("revenuecat_webhook_logs");
+
+            entity.Property(e => e.EventId)
+                .HasColumnType("character varying")
+                .HasColumnName("event_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(now() AT TIME ZONE 'utc'::text)")
+                .HasColumnName("created_at");
+            entity.Property(e => e.EventType)
+                .HasColumnType("character varying")
+                .HasColumnName("event_type");
+            entity.Property(e => e.IsProcessed)
+                .HasDefaultValue(false)
+                .HasColumnName("is_processed");
+            entity.Property(e => e.ProcessingNotes).HasColumnName("processing_notes");
+            entity.Property(e => e.ReceivedAt)
+                .HasDefaultValueSql("(now() AT TIME ZONE 'utc'::text)")
+                .HasColumnName("received_at");
+        });
+
         modelBuilder.Entity<Role>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("roles_pkey");
@@ -409,6 +468,9 @@ public partial class PostgresContext : DbContext
                 .HasColumnType("character varying")
                 .HasColumnName("room_name");
             entity.Property(e => e.ThemeId).HasColumnName("theme_id");
+            entity.Property(e => e.Type)
+                .HasDefaultValueSql("'private'::text")
+                .HasColumnName("type");
             entity.Property(e => e.UserId).HasColumnName("user_id");
 
             entity.HasOne(d => d.Door).WithMany(p => p.Rooms)
@@ -445,9 +507,6 @@ public partial class PostgresContext : DbContext
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(now() AT TIME ZONE 'utc'::text)")
                 .HasColumnName("updated_at");
-            entity.Property(e => e.UserImageUrl)
-                .HasColumnType("character varying")
-                .HasColumnName("user_image_url");
             entity.Property(e => e.ZIndex)
                 .HasDefaultValueSql("'0'::bigint")
                 .HasColumnName("z_index");
@@ -460,6 +519,31 @@ public partial class PostgresContext : DbContext
             entity.HasOne(d => d.Room).WithMany(p => p.RoomItems)
                 .HasForeignKey(d => d.RoomId)
                 .HasConstraintName("room_items_room_id_fkey");
+        });
+
+        modelBuilder.Entity<SlotMemory>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("slot_memories_pkey");
+
+            entity.ToTable("slot_memories");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.MemoryId).HasColumnName("memory_id");
+            entity.Property(e => e.RoomItemId).HasColumnName("room_item_id");
+            entity.Property(e => e.SlotId).HasColumnName("slot_id");
+
+            entity.HasOne(d => d.Memory).WithMany(p => p.SlotMemories)
+                .HasForeignKey(d => d.MemoryId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("slot_memories_memory_id_fkey");
+
+            entity.HasOne(d => d.RoomItem).WithMany(p => p.SlotMemories)
+                .HasForeignKey(d => d.RoomItemId)
+                .HasConstraintName("slot_memories_room_item_id_fkey");
+
+            entity.HasOne(d => d.Slot).WithMany(p => p.SlotMemories)
+                .HasForeignKey(d => d.SlotId)
+                .HasConstraintName("slot_memories_slot_id_fkey");
         });
 
         modelBuilder.Entity<TemplatePage>(entity =>
@@ -487,8 +571,6 @@ public partial class PostgresContext : DbContext
 
             entity.ToTable("themes");
 
-            entity.HasIndex(e => e.DoorId, "themes_door_id_key").IsUnique();
-
             entity.HasIndex(e => e.Id, "themes_id_key").IsUnique();
 
             entity.Property(e => e.Id).HasColumnName("id");
@@ -499,6 +581,9 @@ public partial class PostgresContext : DbContext
             entity.Property(e => e.FloorUrl)
                 .HasColumnType("character varying")
                 .HasColumnName("floor_url");
+            entity.Property(e => e.RevenueCatProductId)
+                .HasColumnType("character varying")
+                .HasColumnName("revenue_cat_product_id");
             entity.Property(e => e.ThemeName)
                 .HasColumnType("character varying")
                 .HasColumnName("theme_name");
@@ -507,8 +592,9 @@ public partial class PostgresContext : DbContext
                 .HasColumnType("character varying")
                 .HasColumnName("wall_url");
 
-            entity.HasOne(d => d.Door).WithOne(p => p.Theme)
-                .HasForeignKey<Theme>(d => d.DoorId)
+            entity.HasOne(d => d.Door).WithMany(p => p.Themes)
+                .HasForeignKey(d => d.DoorId)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("themes_door_id_fkey");
         });
 
@@ -545,6 +631,9 @@ public partial class PostgresContext : DbContext
                 .HasColumnName("phone_number");
             entity.Property(e => e.RefreshToken).HasColumnName("refresh_token");
             entity.Property(e => e.RoleId).HasColumnName("role_id");
+            entity.Property(e => e.Status)
+                .HasDefaultValueSql("'active'::text")
+                .HasColumnName("status");
             entity.Property(e => e.Username)
                 .HasColumnType("character varying")
                 .HasColumnName("username");
@@ -552,6 +641,34 @@ public partial class PostgresContext : DbContext
             entity.HasOne(d => d.Role).WithMany(p => p.Users)
                 .HasForeignKey(d => d.RoleId)
                 .HasConstraintName("users_role_id_fkey");
+        });
+
+        modelBuilder.Entity<UserEntitlement>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("user_entitlements_pkey");
+
+            entity.ToTable("user_entitlements");
+
+            entity.HasIndex(e => e.Id, "user_entitlements_id_key").IsUnique();
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(now() AT TIME ZONE 'utc'::text)")
+                .HasColumnName("created_at");
+            entity.Property(e => e.EntitlementIdentifier)
+                .HasColumnType("character varying")
+                .HasColumnName("entitlement_identifier");
+            entity.Property(e => e.ExpiresDateUtc).HasColumnName("expires_date_utc");
+            entity.Property(e => e.ProductIdentifier)
+                .HasColumnType("character varying")
+                .HasColumnName("product_identifier");
+            entity.Property(e => e.PurchaseDateUtc).HasColumnName("purchase_date_utc");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.HasOne(d => d.User).WithMany(p => p.UserEntitlements)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("user_entitlements_user_id_fkey");
         });
 
         modelBuilder.Entity<UserTheme>(entity =>
@@ -584,15 +701,18 @@ public partial class PostgresContext : DbContext
 
             entity.ToTable("wallets");
 
+            entity.HasIndex(e => e.Id, "wallets_id_key").IsUnique();
+
             entity.HasIndex(e => e.UserId, "wallets_user_id_key").IsUnique();
 
-            entity.Property(e => e.Id)
-                .HasColumnType("character varying")
-                .HasColumnName("id");
+            entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(now() AT TIME ZONE 'utc'::text)")
                 .HasColumnName("created_at");
-            entity.Property(e => e.Puzzles).HasColumnName("puzzles");
+            entity.Property(e => e.LastDailyClaimAt).HasColumnName("last_daily_claim_at");
+            entity.Property(e => e.Puzzles)
+                .HasDefaultValueSql("'100'::numeric")
+                .HasColumnName("puzzles");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(now() AT TIME ZONE 'utc'::text)")
                 .HasColumnName("updated_at");

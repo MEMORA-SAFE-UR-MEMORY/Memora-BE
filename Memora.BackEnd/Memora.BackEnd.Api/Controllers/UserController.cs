@@ -1,8 +1,7 @@
 ﻿using Memora.BackEnd.Services.Dtos;
 using Memora.BackEnd.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace Memora.BackEnd.Api.Controllers
@@ -50,6 +49,13 @@ namespace Memora.BackEnd.Api.Controllers
 			}
 
 			return Ok(new { accessToken = newTokens.Value.accessToken, refreshToken = newTokens.Value.refreshToken });
+		}
+
+		[HttpGet("getUsers")]
+		public async Task<IActionResult> GetAllUser()
+		{
+			var users = await _userService.GetUsersAsync();
+			return Ok(users);
 		}
 	}
 }

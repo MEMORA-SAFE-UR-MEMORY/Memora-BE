@@ -20,4 +20,6 @@ public partial class Memory
     public DateOnly Date { get; set; }
 
     public virtual Room Room { get; set; } = null!;
+
+    public virtual ICollection<SlotMemory> SlotMemories { get; set; } = new List<SlotMemory>();
 }

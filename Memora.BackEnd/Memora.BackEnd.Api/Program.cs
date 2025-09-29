@@ -9,6 +9,17 @@ using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:4200") // Angular dev
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
+
 var connString = builder.Configuration.GetConnectionString("DefaultConnection")
 	?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
@@ -37,6 +48,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+app.UseCors("AllowAngular");
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())

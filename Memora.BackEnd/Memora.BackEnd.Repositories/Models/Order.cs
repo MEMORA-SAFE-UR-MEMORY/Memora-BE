@@ -1,4 +1,7 @@
-﻿namespace Memora.BackEnd.Repositories.Models;
+﻿using System;
+using System.Collections.Generic;
+
+namespace Memora.BackEnd.Repositories.Models;
 
 public partial class Order
 {

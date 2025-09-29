@@ -33,5 +33,10 @@ namespace Memora.BackEnd.Repositories.Repositories
 		{
 			return await _context.Users.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
 		}
-	}
+
+        public async Task<List<User>> GetAllUsersAsync()
+        {
+            return await _context.Users.ToListAsync();
+        }
+    }
 }

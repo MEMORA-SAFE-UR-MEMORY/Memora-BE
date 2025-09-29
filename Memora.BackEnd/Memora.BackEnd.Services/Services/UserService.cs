@@ -1,6 +1,7 @@
 ﻿using Memora.BackEnd.Repositories.Base;
 using Memora.BackEnd.Repositories.Interfaces;
 using Memora.BackEnd.Repositories.Models;
+using Memora.BackEnd.Services.Dtos;
 using Memora.BackEnd.Services.Interfaces;
 using Memora.BackEnd.Services.Libraries;
 using Microsoft.Extensions.Options;
@@ -77,6 +78,21 @@ namespace Memora.BackEnd.Services.Services
 
 			return (newAccessToken, newRefreshToken);
 		}
-	}
+
+        public async Task<List<UserDto>> GetUsersAsync()
+        {
+            var users = await _userRepository.GetAllUsersAsync();
+			var dtos = users.Select(u => new UserDto
+			{
+				Email = u.Email,
+				Fullname = u.Fullname,
+				Id = u.Id,
+				Status = u.Status,
+				Username = u.Username
+			}).ToList();
+
+			return dtos;
+        }
+    }
 }
 

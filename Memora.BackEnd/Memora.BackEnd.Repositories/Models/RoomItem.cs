@@ -15,8 +15,6 @@ public partial class RoomItem
 
     public decimal Rotation { get; set; }
 
-    public string? UserImageUrl { get; set; }
-
     public DateTime CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
@@ -28,4 +26,6 @@ public partial class RoomItem
     public virtual Item? Item { get; set; }
 
     public virtual Room Room { get; set; } = null!;
+
+    public virtual ICollection<SlotMemory> SlotMemories { get; set; } = new List<SlotMemory>();
 }

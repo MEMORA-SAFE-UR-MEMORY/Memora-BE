@@ -8,5 +8,6 @@ namespace Memora.BackEnd.Repositories.Interfaces
 		Task<int> CreateUserAsync(User user);
 		Task<int> UpdateUserAsync(User user);
 		Task<User?> GetByRefreshTokenAsync(string refreshToken);
+		Task<List<User>> GetAllUsersAsync();
 	}
 }

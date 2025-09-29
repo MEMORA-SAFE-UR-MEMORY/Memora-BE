@@ -17,13 +17,17 @@ public partial class Item
 
     public string ItemImagePath { get; set; } = null!;
 
-    public long DimensionId { get; set; }
+    public long? DimensionId { get; set; }
 
     public long? ThemeId { get; set; }
 
+    public string Type { get; set; } = null!;
+
     public virtual Category Category { get; set; } = null!;
 
-    public virtual ItemDimension Dimension { get; set; } = null!;
+    public virtual ItemDimension? Dimension { get; set; }
+
+    public virtual ICollection<FrameSlot> FrameSlots { get; set; } = new List<FrameSlot>();
 
     public virtual ICollection<InventoryItem> InventoryItems { get; set; } = new List<InventoryItem>();
 

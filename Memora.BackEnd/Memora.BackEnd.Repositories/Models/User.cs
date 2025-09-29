@@ -25,6 +25,8 @@ public partial class User
 
     public string? RefreshToken { get; set; }
 
+    public string? Status { get; set; }
+
     public virtual ICollection<Album> Albums { get; set; } = new List<Album>();
 
     public virtual Inventory? Inventory { get; set; }
@@ -34,6 +36,8 @@ public partial class User
     public virtual Role Role { get; set; } = null!;
 
     public virtual ICollection<Room> Rooms { get; set; } = new List<Room>();
+
+    public virtual ICollection<UserEntitlement> UserEntitlements { get; set; } = new List<UserEntitlement>();
 
     public virtual ICollection<UserTheme> UserThemes { get; set; } = new List<UserTheme>();
 
