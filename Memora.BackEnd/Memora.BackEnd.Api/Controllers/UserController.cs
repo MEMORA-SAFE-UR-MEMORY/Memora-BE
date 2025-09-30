@@ -1,4 +1,5 @@
-﻿using Memora.BackEnd.Services.Dtos;
+﻿// Memora.BackEnd/Memora.BackEnd.Api/Controllers/UserController.cs
+using Memora.BackEnd.Services.Dtos;
 using Memora.BackEnd.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
@@ -13,7 +14,8 @@ namespace Memora.BackEnd.Api.Controllers
 		private readonly IUserService _userService;
 		public UserController(IUserService userService) => _userService = userService;
 
-		[HttpPost("login")]	
+		[AllowAnonymous]
+		[HttpPost("login")]
 		public async Task<IActionResult> Login([FromBody] AccessRequest request)
 		{
 			if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -22,6 +24,7 @@ namespace Memora.BackEnd.Api.Controllers
 			return Ok(new { accessToken = tokens.Value.accessToken, refreshToken = tokens.Value.refreshToken });
 		}
 
+		[AllowAnonymous]
 		[HttpPost("register")]
 		public async Task<IActionResult> Register([FromBody] AccessRequest request)
 		{
@@ -31,11 +34,12 @@ namespace Memora.BackEnd.Api.Controllers
 			return Ok("User registered");
 		}
 
+		[AllowAnonymous]
 		[HttpPost("refresh")]
 		public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request)
 		{
 			if (!ModelState.IsValid) return BadRequest(ModelState);
-			
+
 			if (string.IsNullOrWhiteSpace(request.RefreshToken))
 			{
 				return BadRequest("Refresh token is required.");
@@ -51,6 +55,7 @@ namespace Memora.BackEnd.Api.Controllers
 			return Ok(new { accessToken = newTokens.Value.accessToken, refreshToken = newTokens.Value.refreshToken });
 		}
 
+		[Authorize(Roles = "2")]
 		[HttpGet("getUsers")]
 		public async Task<IActionResult> GetAllUser()
 		{
@@ -58,12 +63,13 @@ namespace Memora.BackEnd.Api.Controllers
 			return Ok(users);
 		}
 
-        [HttpPost("{id:Guid}/ban")]
-        public async Task<IActionResult> BanUser([FromRoute] Guid id)
-        {
+		[Authorize(Roles = "2")]
+		[HttpPost("{id:Guid}/ban")]
+		public async Task<IActionResult> BanUser([FromRoute] Guid id)
+		{
 			var result = await _userService.BanUser(id);
 			if (result == 0) return BadRequest("Không tìm thấy user");
 			return Ok("Đã ban thành công");
-        }
-    }
+		}
+	}
 }
