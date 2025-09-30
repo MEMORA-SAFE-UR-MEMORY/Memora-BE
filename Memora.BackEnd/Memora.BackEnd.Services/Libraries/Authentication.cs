@@ -17,7 +17,7 @@ namespace Memora.BackEnd.Services.Libraries
 			{
 				new Claim("id", user.Id.ToString()),
 				new Claim("username", user.Username),
-				new Claim("role", user.RoleId.ToString()),
+				new Claim(ClaimTypes.Role, user.RoleId.ToString()),
 				new Claim("token_type", "access")
 			};
 
