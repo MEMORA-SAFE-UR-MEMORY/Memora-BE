@@ -12,14 +12,16 @@ namespace Memora.BackEnd.Services.Services
 	{
 		private readonly IUserRepository _userRepository;
 		private readonly JWTSettings _jwtSettings;
+        private readonly EmailService _email;
 
-		public UserService(IUserRepository userRepository, IOptions<JWTSettings> jwtSettings)
+        public UserService(IUserRepository userRepository, IOptions<JWTSettings> jwtSettings, EmailService email)
 		{
 			_userRepository = userRepository;
 			_jwtSettings = jwtSettings.Value
 				?? throw new ArgumentNullException(nameof(jwtSettings), "JWT settings is not configured");
-		}
-		public async Task<(string accessToken, string refreshToken)?> LoginAsync(string userName, string password)
+            _email = email;
+        }
+        public async Task<(string accessToken, string refreshToken)?> LoginAsync(string userName, string password)
 		{
 			var user = await _userRepository.GetByUsernameAsync(userName);
 			if (user is null) return null;
@@ -97,6 +99,65 @@ namespace Memora.BackEnd.Services.Services
         public async Task<int> BanUser(Guid userId)
         {
 			return await _userRepository.BanUser(userId);
+        }
+
+        public async Task<int> SignUpAsync(string email, string userName, string password)
+        {
+            var checkUsername = await _userRepository.GetByUsernameAsync(userName);
+            if (checkUsername is not null) return -1;
+			var checkEmail = await _userRepository.CheckEmailUsername(email);
+			if (checkEmail is not null) return -1;
+
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
+            var user = new User()
+            {
+				Email = email,
+                Username = userName,
+                PasswordHash = passwordHash,
+                RoleId = 1,
+            };
+
+            return await _userRepository.CreateUserAsync(user);
+        }
+
+        public async Task<int> ForgotPassword(string usernameOrEmail)
+        {
+            var user = await _userRepository.CheckEmailUsername(usernameOrEmail);
+            if (user == null) return -1;
+
+            // tạo OTP 6 số
+            var rng = new Random();
+            var otp = rng.Next(100000, 999999).ToString();
+
+			user.ResetToken = otp;
+            user.ResetTokenExpiry = DateTime.UtcNow.AddMinutes(15);
+            var res = await _userRepository.UpdateUserAsync(user);
+
+            string resetLink = $"http://localhost:5000/reset?token={user.ResetToken}";
+            await _email.SendEmailAsync(user.Email, "Mã xác thực đặt lại mật khẩu", $"Mã OTP của bạn là: {otp} (hết hạn sau 15 phút)");
+
+            return res;
+        }
+
+        public async Task<int> ResetPassword(string otp, string newPass)
+        {
+            var user = await _userRepository.CheckResetToken(otp);
+			if (user == null) return -1;
+
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword(newPass);
+			user.PasswordHash = passwordHash;
+            user.ResetToken = null;
+            user.ResetTokenExpiry = null;
+			
+			return await _userRepository.UpdateUserAsync(user);
+        }
+
+        public async Task<bool> CheckOtp(string otp)
+        {
+            var user = await _userRepository.CheckResetToken(otp);
+            if (user == null) return false;
+
+			return true;
         }
     }
 }

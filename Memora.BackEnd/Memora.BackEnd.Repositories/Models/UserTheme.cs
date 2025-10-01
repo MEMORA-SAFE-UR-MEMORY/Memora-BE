@@ -13,6 +13,8 @@ public partial class UserTheme
 
     public Guid UserId { get; set; }
 
+    public virtual ICollection<Room> Rooms { get; set; } = new List<Room>();
+
     public virtual Theme Theme { get; set; } = null!;
 
     public virtual User User { get; set; } = null!;

@@ -4,6 +4,7 @@ using Memora.BackEnd.Repositories.DBContext;
 using Memora.BackEnd.Repositories.Interfaces;
 using Memora.BackEnd.Repositories.Repositories;
 using Memora.BackEnd.Services.Interfaces;
+using Memora.BackEnd.Services.Libraries;
 using Memora.BackEnd.Services.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -92,6 +93,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPurchaseService, PurchaseService>();
 
+builder.Services.AddScoped<EmailService>();
 // ==========================================================
 // Controllers
 // ==========================================================

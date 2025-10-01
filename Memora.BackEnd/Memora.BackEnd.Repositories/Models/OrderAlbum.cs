@@ -7,15 +7,15 @@ public partial class OrderAlbum
 {
     public long Id { get; set; }
 
+    public DateTime CreatedAt { get; set; }
+
     public long Quantity { get; set; }
 
     public decimal Price { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public long AlbumId { get; set; }
 
     public long OrderId { get; set; }
-
-    public long AlbumId { get; set; }
 
     public virtual Album Album { get; set; } = null!;
 

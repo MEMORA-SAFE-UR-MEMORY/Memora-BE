@@ -3,20 +3,23 @@ using System.Collections.Generic;
 
 namespace Memora.BackEnd.Repositories.Models;
 
-/// <summary>
-/// chi tiết layout từng trang trong 1 template
-/// </summary>
 public partial class TemplatePage
 {
     public long Id { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public long TemplateId { get; set; }
 
-    public long PageNumber { get; set; }
+    public int PageNo { get; set; }
 
-    public string LayoutUrl { get; set; } = null!;
+    public string? LayoutUrl { get; set; }
 
-    public long TemplatesId { get; set; }
+    public DateTime? CreatedAt { get; set; }
 
-    public virtual AlbumTemplate Templates { get; set; } = null!;
+    public bool HasSlots { get; set; }
+
+    public virtual ICollection<AlbumPage> AlbumPages { get; set; } = new List<AlbumPage>();
+
+    public virtual Template Template { get; set; } = null!;
+
+    public virtual ICollection<TemplatePageSlot> TemplatePageSlots { get; set; } = new List<TemplatePageSlot>();
 }

@@ -25,7 +25,5 @@ public partial class Theme
 
     public virtual ICollection<Item> Items { get; set; } = new List<Item>();
 
-    public virtual ICollection<Room> Rooms { get; set; } = new List<Room>();
-
     public virtual ICollection<UserTheme> UserThemes { get; set; } = new List<UserTheme>();
 }

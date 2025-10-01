@@ -25,7 +25,7 @@ public partial class Room
 
     public virtual ICollection<RoomItem> RoomItems { get; set; } = new List<RoomItem>();
 
-    public virtual Theme? Theme { get; set; }
+    public virtual UserTheme? Theme { get; set; }
 
     public virtual User User { get; set; } = null!;
 }

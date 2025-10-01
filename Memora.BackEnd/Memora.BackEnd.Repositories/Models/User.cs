@@ -27,6 +27,10 @@ public partial class User
 
     public string? Status { get; set; }
 
+    public string? ResetToken { get; set; }
+
+    public DateTime? ResetTokenExpiry { get; set; }
+
     public virtual ICollection<Album> Albums { get; set; } = new List<Album>();
 
     public virtual Inventory? Inventory { get; set; }

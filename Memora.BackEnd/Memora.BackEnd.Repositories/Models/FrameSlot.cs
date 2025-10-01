@@ -23,6 +23,8 @@ public partial class FrameSlot
 
     public long ItemId { get; set; }
 
+    public long FrameSlot1 { get; set; }
+
     public virtual Item Item { get; set; } = null!;
 
     public virtual ICollection<SlotMemory> SlotMemories { get; set; } = new List<SlotMemory>();

@@ -47,5 +47,17 @@ namespace Memora.BackEnd.Repositories.Repositories
 			user.Status = "Banned";
 			return await UpdateUserAsync(user);
         }
+
+		public async Task<User?> CheckEmailUsername(string usernameOrEmail)
+		{
+			var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == usernameOrEmail || u.Username == usernameOrEmail);
+            return user;
+        }
+
+        public async Task<User?> CheckResetToken(string token)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.ResetToken == token || u.ResetTokenExpiry > DateTime.UtcNow);
+            return user;
+        }
     }
 }
