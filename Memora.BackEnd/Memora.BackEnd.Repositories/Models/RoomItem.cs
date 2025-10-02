@@ -7,9 +7,9 @@ public partial class RoomItem
 {
     public long Id { get; set; }
 
-    public long? PosX { get; set; }
+    public decimal? PosX { get; set; }
 
-    public long? PosY { get; set; }
+    public decimal? PosY { get; set; }
 
     public long ZIndex { get; set; }
 

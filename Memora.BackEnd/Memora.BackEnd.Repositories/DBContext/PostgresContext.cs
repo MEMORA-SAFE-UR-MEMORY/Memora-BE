@@ -234,19 +234,20 @@ public partial class PostgresContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("now()")
                 .HasColumnName("created_at");
-            entity.Property(e => e.FrameSlot1).HasColumnName("frame_slot");
             entity.Property(e => e.H).HasColumnName("h");
             entity.Property(e => e.ItemId).HasColumnName("item_id");
             entity.Property(e => e.Rotation).HasColumnName("rotation");
             entity.Property(e => e.Shape)
                 .HasColumnType("jsonb")
                 .HasColumnName("shape");
+            entity.Property(e => e.SlotId).HasColumnName("slot_id");
             entity.Property(e => e.W).HasColumnName("w");
             entity.Property(e => e.X).HasColumnName("x");
             entity.Property(e => e.Y).HasColumnName("y");
 
             entity.HasOne(d => d.Item).WithMany(p => p.FrameSlots)
                 .HasForeignKey(d => d.ItemId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("frame_slots_item_id_fkey");
         });
 
@@ -334,7 +335,6 @@ public partial class PostgresContext : DbContext
 
             entity.HasOne(d => d.Dimension).WithMany(p => p.Items)
                 .HasForeignKey(d => d.DimensionId)
-                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("items_dimension_id_fkey");
 
             entity.HasOne(d => d.Theme).WithMany(p => p.Items)
@@ -600,9 +600,13 @@ public partial class PostgresContext : DbContext
             entity.ToTable("slot_memories");
 
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.FrameSlotId).HasColumnName("frame_slot_id");
             entity.Property(e => e.MemoryId).HasColumnName("memory_id");
             entity.Property(e => e.RoomItemId).HasColumnName("room_item_id");
-            entity.Property(e => e.SlotId).HasColumnName("slot_id");
+
+            entity.HasOne(d => d.FrameSlot).WithMany(p => p.SlotMemories)
+                .HasForeignKey(d => d.FrameSlotId)
+                .HasConstraintName("slot_memories_slot_id_fkey");
 
             entity.HasOne(d => d.Memory).WithMany(p => p.SlotMemories)
                 .HasForeignKey(d => d.MemoryId)
@@ -612,10 +616,6 @@ public partial class PostgresContext : DbContext
             entity.HasOne(d => d.RoomItem).WithMany(p => p.SlotMemories)
                 .HasForeignKey(d => d.RoomItemId)
                 .HasConstraintName("slot_memories_room_item_id_fkey");
-
-            entity.HasOne(d => d.Slot).WithMany(p => p.SlotMemories)
-                .HasForeignKey(d => d.SlotId)
-                .HasConstraintName("slot_memories_slot_id_fkey");
         });
 
         modelBuilder.Entity<Template>(entity =>

@@ -78,7 +78,7 @@ namespace Memora.BackEnd.Api.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             var result = await _userService.SignUpAsync(request.Email, request.Username, request.PasswordHash);
-            if (result == -1) return BadRequest("Username already exists");
+            if (result == -1) return BadRequest("Username or Email already exists");
             return Ok("User registered");
         }
 

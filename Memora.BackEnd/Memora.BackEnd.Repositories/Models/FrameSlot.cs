@@ -23,7 +23,7 @@ public partial class FrameSlot
 
     public long ItemId { get; set; }
 
-    public long FrameSlot1 { get; set; }
+    public long SlotId { get; set; }
 
     public virtual Item Item { get; set; } = null!;
 
