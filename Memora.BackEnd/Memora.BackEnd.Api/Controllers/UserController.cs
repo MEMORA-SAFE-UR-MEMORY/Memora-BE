@@ -2,7 +2,6 @@
 using Memora.BackEnd.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using static System.Net.WebRequestMethods;
 
 
 namespace Memora.BackEnd.Api.Controllers
@@ -20,7 +19,7 @@ namespace Memora.BackEnd.Api.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             var tokens = await _userService.LoginAsync(request.UserName, request.Password);
-            if (tokens == null) return BadRequest("Invalid login");
+            if (tokens == null) return BadRequest("Invalid username or password");
             return Ok(new { accessToken = tokens.Value.accessToken, refreshToken = tokens.Value.refreshToken });
         }
 
