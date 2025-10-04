@@ -37,7 +37,7 @@ namespace Memora.BackEnd.Services.Services
 				throw new ArgumentException("Invalid user ID format.", nameof(appUserId));
 			}
 
-			var user = await _userRepository.GetByUsernameAsync(userId.ToString());
+			var user = await _userRepository.GetByEmailAsync(userId.ToString());
 			if (user == null)
 			{
 				_logger.LogWarning("User with AppUserID {AppUserId} not found in database.", appUserId);

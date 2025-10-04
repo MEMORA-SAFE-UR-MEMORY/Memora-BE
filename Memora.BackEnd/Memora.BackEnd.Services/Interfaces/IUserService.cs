@@ -4,7 +4,7 @@ namespace Memora.BackEnd.Services.Interfaces
 {
 	public interface IUserService
 	{
-		public Task<(string accessToken, string refreshToken)?> LoginAsync(string userName, string password);
+		public Task<(string accessToken, string refreshToken)?> LoginAsync(string email, string password);
 		public Task<int> RegisterAsync(string userName, string password);
         public Task<int> SignUpAsync(string email, string userName, string password);
         public Task<(string accessToken, string refreshToken)?> RefreshTokenAsync(string refreshToken);

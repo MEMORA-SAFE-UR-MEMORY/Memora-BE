@@ -11,9 +11,9 @@ namespace Memora.BackEnd.Repositories.Repositories
 
 		public UserRepository(PostgresContext context) => _context = context;
 
-		public async Task<User?> GetByUsernameAsync(string userName)
+		public async Task<User?> GetByEmailAsync(string email)
 		{
-			var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == userName);
+			var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
 			return user;
 		}
 

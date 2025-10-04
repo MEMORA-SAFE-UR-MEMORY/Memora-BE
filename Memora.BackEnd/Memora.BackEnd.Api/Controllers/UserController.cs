@@ -18,7 +18,7 @@ namespace Memora.BackEnd.Api.Controllers
         public async Task<IActionResult> Login([FromBody] AccessRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            var tokens = await _userService.LoginAsync(request.UserName, request.Password);
+            var tokens = await _userService.LoginAsync(request.Email, request.Password);
             if (tokens == null) return BadRequest("Invalid username or password");
             return Ok(new { accessToken = tokens.Value.accessToken, refreshToken = tokens.Value.refreshToken });
         }
@@ -28,7 +28,7 @@ namespace Memora.BackEnd.Api.Controllers
         public async Task<IActionResult> Register([FromBody] AccessRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            var result = await _userService.RegisterAsync(request.UserName, request.Password);
+            var result = await _userService.RegisterAsync(request.Email, request.Password);
             if (result == -1) return BadRequest("Username already exists");
             return Ok("User registered");
         }

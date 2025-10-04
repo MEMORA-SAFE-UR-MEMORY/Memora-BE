@@ -4,7 +4,7 @@ namespace Memora.BackEnd.Repositories.Interfaces
 {
 	public interface IUserRepository
 	{
-		Task<User?> GetByUsernameAsync(string userName);
+		Task<User?> GetByEmailAsync(string email);
         Task<User?> CheckEmailUsername(string usernameOrEmail);
         Task<int> CreateUserAsync(User user);
         Task<int> UpdateUserAsync(User user);

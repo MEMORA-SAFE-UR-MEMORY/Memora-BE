@@ -21,9 +21,9 @@ namespace Memora.BackEnd.Services.Services
 				?? throw new ArgumentNullException(nameof(jwtSettings), "JWT settings is not configured");
             _email = email;
         }
-        public async Task<(string accessToken, string refreshToken)?> LoginAsync(string userName, string password)
+        public async Task<(string accessToken, string refreshToken)?> LoginAsync(string email, string password)
 		{
-			var user = await _userRepository.GetByUsernameAsync(userName);
+			var user = await _userRepository.GetByEmailAsync(email);
 			if (user is null) return null;
 			if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash)) return null;
 
@@ -37,7 +37,7 @@ namespace Memora.BackEnd.Services.Services
 
 		public async Task<int> RegisterAsync(string userName, string password)
 		{
-			var existingUser = await _userRepository.GetByUsernameAsync(userName);
+			var existingUser = await _userRepository.GetByEmailAsync(userName);
 			if (existingUser is not null) return -1;
 
 			var passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
@@ -103,7 +103,7 @@ namespace Memora.BackEnd.Services.Services
 
         public async Task<int> SignUpAsync(string email, string userName, string password)
         {
-            var checkUsername = await _userRepository.GetByUsernameAsync(userName);
+            var checkUsername = await _userRepository.GetByEmailAsync(userName);
             if (checkUsername is not null) return -1;
 			var checkEmail = await _userRepository.CheckEmailUsername(email);
 			if (checkEmail is not null) return -1;
