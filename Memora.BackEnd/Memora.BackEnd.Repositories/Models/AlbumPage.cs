@@ -21,7 +21,5 @@ public partial class AlbumPage
 
     public virtual ICollection<AlbumPageSlot> AlbumPageSlots { get; set; } = new List<AlbumPageSlot>();
 
-    public virtual ICollection<PagePhoto> PagePhotos { get; set; } = new List<PagePhoto>();
-
     public virtual TemplatePage? PageTemplate { get; set; }
 }

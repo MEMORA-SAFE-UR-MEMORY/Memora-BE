@@ -13,25 +13,13 @@ public partial class AlbumPageSlot
 
     public int SlotIndex { get; set; }
 
-    public decimal XPct { get; set; }
-
-    public decimal YPct { get; set; }
-
-    public decimal WPct { get; set; }
-
-    public decimal HPct { get; set; }
-
-    public decimal? RotationDeg { get; set; }
-
-    public int? ZIndex { get; set; }
-
-    public string? Shape { get; set; }
-
     public DateTime? CreatedAt { get; set; }
 
-    public virtual AlbumPage AlbumPage { get; set; } = null!;
+    public string? PhotoUrl { get; set; }
 
-    public virtual ICollection<PagePhoto> PagePhotos { get; set; } = new List<PagePhoto>();
+    public DateTime? UpdatedAt { get; set; }
+
+    public virtual AlbumPage AlbumPage { get; set; } = null!;
 
     public virtual TemplatePageSlot? TemplateSlot { get; set; }
 }

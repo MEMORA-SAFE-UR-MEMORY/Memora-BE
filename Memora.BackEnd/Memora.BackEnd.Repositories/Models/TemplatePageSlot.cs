@@ -11,18 +11,6 @@ public partial class TemplatePageSlot
 
     public int SlotIndex { get; set; }
 
-    public decimal XPct { get; set; }
-
-    public decimal YPct { get; set; }
-
-    public decimal WPct { get; set; }
-
-    public decimal HPct { get; set; }
-
-    public decimal? RotationDeg { get; set; }
-
-    public int? ZIndex { get; set; }
-
     public string? Shape { get; set; }
 
     public DateTime? CreatedAt { get; set; }
