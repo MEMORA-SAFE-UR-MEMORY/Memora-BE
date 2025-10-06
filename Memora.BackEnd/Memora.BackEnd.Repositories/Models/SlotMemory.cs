@@ -11,11 +11,11 @@ public partial class SlotMemory
 
     public long FrameSlotId { get; set; }
 
-    public long MemoryId { get; set; }
+    public long? MemoryId { get; set; }
 
     public virtual FrameSlot FrameSlot { get; set; } = null!;
 
-    public virtual Memory Memory { get; set; } = null!;
+    public virtual Memory? Memory { get; set; }
 
     public virtual RoomItem RoomItem { get; set; } = null!;
 }

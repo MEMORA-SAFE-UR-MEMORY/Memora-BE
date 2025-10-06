@@ -1,4 +1,6 @@
-﻿using Memora.BackEnd.Repositories.Models;
+﻿using System;
+using System.Collections.Generic;
+using Memora.BackEnd.Repositories.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Memora.BackEnd.Repositories.DBContext;
@@ -40,8 +42,6 @@ public partial class PostgresContext : DbContext
 
     public virtual DbSet<OrderAlbum> OrderAlbums { get; set; }
 
-    public virtual DbSet<PagePhoto> PagePhotos { get; set; }
-
     public virtual DbSet<RevenuecatWebhookLog> RevenuecatWebhookLogs { get; set; }
 
     public virtual DbSet<Role> Roles { get; set; }
@@ -58,6 +58,8 @@ public partial class PostgresContext : DbContext
 
     public virtual DbSet<TemplatePageSlot> TemplatePageSlots { get; set; }
 
+    public virtual DbSet<TemplatePageSlotsWithPage> TemplatePageSlotsWithPages { get; set; }
+
     public virtual DbSet<Theme> Themes { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
@@ -66,7 +68,15 @@ public partial class PostgresContext : DbContext
 
     public virtual DbSet<UserTheme> UserThemes { get; set; }
 
+    public virtual DbSet<VAlbumPageSlotCount> VAlbumPageSlotCounts { get; set; }
+
+    public virtual DbSet<VTemplatePageSlotCount> VTemplatePageSlotCounts { get; set; }
+
     public virtual DbSet<Wallet> Wallets { get; set; }
+
+//    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+//        => optionsBuilder.UseNpgsql("User Id=postgres.yzzispiaqactvbvsjwcw;Password=Hellomemora12345@;Server=aws-0-ap-southeast-1.pooler.supabase.com;Port=6543;Database=postgres;SSL Mode=Require;Trust Server Certificate=true;Keepalive=30;Timeout=15;CommandTimeout=30;Pooling=false");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -151,35 +161,23 @@ public partial class PostgresContext : DbContext
 
             entity.HasIndex(e => new { e.AlbumPageId, e.SlotIndex }, "album_page_slots_album_page_id_slot_index_key").IsUnique();
 
+            entity.HasIndex(e => e.AlbumPageId, "idx_album_page_slots_album_page");
+
+            entity.HasIndex(e => e.TemplateSlotId, "idx_album_page_slots_template_slot");
+
+            entity.HasIndex(e => new { e.AlbumPageId, e.SlotIndex }, "uq_album_page_slot").IsUnique();
+
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.AlbumPageId).HasColumnName("album_page_id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("now()")
                 .HasColumnName("created_at");
-            entity.Property(e => e.HPct)
-                .HasPrecision(6, 3)
-                .HasColumnName("h_pct");
-            entity.Property(e => e.RotationDeg)
-                .HasPrecision(6, 2)
-                .HasDefaultValueSql("0")
-                .HasColumnName("rotation_deg");
-            entity.Property(e => e.Shape)
-                .HasDefaultValueSql("'rect'::text")
-                .HasColumnName("shape");
+            entity.Property(e => e.PhotoUrl).HasColumnName("photo_url");
             entity.Property(e => e.SlotIndex).HasColumnName("slot_index");
             entity.Property(e => e.TemplateSlotId).HasColumnName("template_slot_id");
-            entity.Property(e => e.WPct)
-                .HasPrecision(6, 3)
-                .HasColumnName("w_pct");
-            entity.Property(e => e.XPct)
-                .HasPrecision(6, 3)
-                .HasColumnName("x_pct");
-            entity.Property(e => e.YPct)
-                .HasPrecision(6, 3)
-                .HasColumnName("y_pct");
-            entity.Property(e => e.ZIndex)
-                .HasDefaultValue(0)
-                .HasColumnName("z_index");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("updated_at");
 
             entity.HasOne(d => d.AlbumPage).WithMany(p => p.AlbumPageSlots)
                 .HasForeignKey(d => d.AlbumPageId)
@@ -436,50 +434,6 @@ public partial class PostgresContext : DbContext
                 .HasConstraintName("order_albums_order_id_fkey");
         });
 
-        modelBuilder.Entity<PagePhoto>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("page_photos_pkey");
-
-            entity.ToTable("page_photos");
-
-            entity.HasIndex(e => new { e.AlbumPageId, e.SlotId }, "page_photos_album_page_id_slot_id_key").IsUnique();
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.AlbumPageId).HasColumnName("album_page_id");
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("now()")
-                .HasColumnName("created_at");
-            entity.Property(e => e.FitMode)
-                .HasDefaultValueSql("'cover'::text")
-                .HasColumnName("fit_mode");
-            entity.Property(e => e.OffsetXPct)
-                .HasPrecision(6, 3)
-                .HasDefaultValueSql("0")
-                .HasColumnName("offset_x_pct");
-            entity.Property(e => e.OffsetYPct)
-                .HasPrecision(6, 3)
-                .HasDefaultValueSql("0")
-                .HasColumnName("offset_y_pct");
-            entity.Property(e => e.PhotoUrl).HasColumnName("photo_url");
-            entity.Property(e => e.RotationDeg)
-                .HasPrecision(6, 2)
-                .HasDefaultValueSql("0")
-                .HasColumnName("rotation_deg");
-            entity.Property(e => e.ScalePct)
-                .HasPrecision(7, 3)
-                .HasDefaultValueSql("100.000")
-                .HasColumnName("scale_pct");
-            entity.Property(e => e.SlotId).HasColumnName("slot_id");
-
-            entity.HasOne(d => d.AlbumPage).WithMany(p => p.PagePhotos)
-                .HasForeignKey(d => d.AlbumPageId)
-                .HasConstraintName("page_photos_album_page_id_fkey");
-
-            entity.HasOne(d => d.Slot).WithMany(p => p.PagePhotos)
-                .HasForeignKey(d => d.SlotId)
-                .HasConstraintName("page_photos_slot_id_fkey");
-        });
-
         modelBuilder.Entity<RevenuecatWebhookLog>(entity =>
         {
             entity.HasKey(e => e.EventId).HasName("revenue_cat_webhook_og_pkey");
@@ -642,6 +596,8 @@ public partial class PostgresContext : DbContext
 
             entity.ToTable("template_pages");
 
+            entity.HasIndex(e => new { e.TemplateId, e.PageNo, e.Id }, "idx_template_pages_preview").HasFilter("(layout_url IS NOT NULL)");
+
             entity.HasIndex(e => e.Id, "template_pages_id_key").IsUnique();
 
             entity.HasIndex(e => new { e.TemplateId, e.PageNo }, "template_pages_template_id_page_no_key").IsUnique();
@@ -680,38 +636,38 @@ public partial class PostgresContext : DbContext
 
             entity.HasIndex(e => new { e.TemplatePageId, e.SlotIndex }, "template_page_slots_template_page_id_slot_index_key").IsUnique();
 
+            entity.HasIndex(e => new { e.TemplatePageId, e.SlotIndex }, "uq_template_page_slot").IsUnique();
+
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("now()")
                 .HasColumnName("created_at");
-            entity.Property(e => e.HPct)
-                .HasPrecision(6, 3)
-                .HasColumnName("h_pct");
-            entity.Property(e => e.RotationDeg)
-                .HasPrecision(6, 2)
-                .HasDefaultValueSql("0")
-                .HasColumnName("rotation_deg");
             entity.Property(e => e.Shape)
                 .HasDefaultValueSql("'rect'::text")
                 .HasColumnName("shape");
             entity.Property(e => e.SlotIndex).HasColumnName("slot_index");
             entity.Property(e => e.TemplatePageId).HasColumnName("template_page_id");
-            entity.Property(e => e.WPct)
-                .HasPrecision(6, 3)
-                .HasColumnName("w_pct");
-            entity.Property(e => e.XPct)
-                .HasPrecision(6, 3)
-                .HasColumnName("x_pct");
-            entity.Property(e => e.YPct)
-                .HasPrecision(6, 3)
-                .HasColumnName("y_pct");
-            entity.Property(e => e.ZIndex)
-                .HasDefaultValue(0)
-                .HasColumnName("z_index");
 
             entity.HasOne(d => d.TemplatePage).WithMany(p => p.TemplatePageSlots)
                 .HasForeignKey(d => d.TemplatePageId)
                 .HasConstraintName("template_page_slots_template_page_id_fkey");
+        });
+
+        modelBuilder.Entity<TemplatePageSlotsWithPage>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("template_page_slots_with_page")
+                .HasAnnotation("Npgsql:StorageParameter:security_invoker", "on");
+
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.LayoutUrl).HasColumnName("layout_url");
+            entity.Property(e => e.PageNo).HasColumnName("page_no");
+            entity.Property(e => e.Shape).HasColumnName("shape");
+            entity.Property(e => e.SlotIndex).HasColumnName("slot_index");
+            entity.Property(e => e.TemplateId).HasColumnName("template_id");
+            entity.Property(e => e.TemplatePageId).HasColumnName("template_page_id");
         });
 
         modelBuilder.Entity<Theme>(entity =>
@@ -844,6 +800,32 @@ public partial class PostgresContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.UserThemes)
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("user_themes_user_id_fkey");
+        });
+
+        modelBuilder.Entity<VAlbumPageSlotCount>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("v_album_page_slot_counts")
+                .HasAnnotation("Npgsql:StorageParameter:security_invoker", "on");
+
+            entity.Property(e => e.AlbumId).HasColumnName("album_id");
+            entity.Property(e => e.AlbumPageId).HasColumnName("album_page_id");
+            entity.Property(e => e.PageNo).HasColumnName("page_no");
+            entity.Property(e => e.SlotCount).HasColumnName("slot_count");
+        });
+
+        modelBuilder.Entity<VTemplatePageSlotCount>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("v_template_page_slot_counts")
+                .HasAnnotation("Npgsql:StorageParameter:security_invoker", "on");
+
+            entity.Property(e => e.PageNo).HasColumnName("page_no");
+            entity.Property(e => e.SlotCount).HasColumnName("slot_count");
+            entity.Property(e => e.TemplateId).HasColumnName("template_id");
+            entity.Property(e => e.TemplatePageId).HasColumnName("template_page_id");
         });
 
         modelBuilder.Entity<Wallet>(entity =>
