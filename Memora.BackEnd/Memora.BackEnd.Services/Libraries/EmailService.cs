@@ -15,7 +15,7 @@ namespace Memora.BackEnd.Services.Libraries
         public async Task SendEmailAsync(string toEmail, string subject, string body)
         {
             var message = new MimeMessage();
-            message.From.Add(new MailboxAddress("Support", _config["Email:From"]));
+            message.From.Add(new MailboxAddress("MemoraSupport", _config["Email:From"]));
             message.To.Add(new MailboxAddress("", toEmail));
             message.Subject = subject;
             message.Body = new TextPart("plain") { Text = body };

@@ -5,6 +5,7 @@ namespace Memora.BackEnd.Repositories.Interfaces
 	public interface IUserRepository
 	{
 		Task<User?> GetByEmailAsync(string email);
+        Task<User?> GetByIdAsync(Guid UserId);
         Task<User?> CheckEmailUsername(string usernameOrEmail);
         Task<int> CreateUserAsync(User user);
         Task<int> UpdateUserAsync(User user);

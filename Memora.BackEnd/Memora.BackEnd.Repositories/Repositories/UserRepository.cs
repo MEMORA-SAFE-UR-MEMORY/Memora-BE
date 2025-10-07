@@ -59,5 +59,11 @@ namespace Memora.BackEnd.Repositories.Repositories
             var user = await _context.Users.FirstOrDefaultAsync(u => u.ResetToken == token || u.ResetTokenExpiry > DateTime.UtcNow);
             return user;
         }
+
+        public async Task<User?> GetByIdAsync(Guid UserId)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == UserId);
+            return user;
+        }
     }
 }

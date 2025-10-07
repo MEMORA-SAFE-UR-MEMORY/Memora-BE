@@ -2,15 +2,21 @@
 using Memora.BackEnd.Repositories.Models;
 using Memora.BackEnd.Services.Dtos;
 using Memora.BackEnd.Services.Interfaces;
+using Memora.BackEnd.Services.Libraries; // thêm dòng này để dùng EmailService
 
 namespace Memora.BackEnd.Services.Services
 {
     public class OrderService : IOrderService
     {
         private readonly IOrderRepository _orderRepository;
-        public OrderService(IOrderRepository orderRepository)
+        private readonly IUserRepository _userRepository; // cần để lấy thông tin user
+        private readonly EmailService _email; // thêm EmailService
+
+        public OrderService(IOrderRepository orderRepository, IUserRepository userRepository, EmailService email)
         {
             _orderRepository = orderRepository;
+            _userRepository = userRepository;
+            _email = email;
         }
 
         public async Task<List<OrderDto>> GetAllAsync()
@@ -65,7 +71,32 @@ namespace Memora.BackEnd.Services.Services
                 }).ToList()
             };
 
-            return await _orderRepository.CreateOrder(order);
+            var result = await _orderRepository.CreateOrder(order);
+
+            // ✅ Sau khi tạo order thành công, gửi mail cho user
+            if (result > 0)
+            {
+                var user = await _userRepository.GetByIdAsync(request.UserId);
+                if (user != null && !string.IsNullOrEmpty(user.Email))
+                {
+                    string subject = "Xác nhận đơn hàng của bạn";
+                    string message = $@"
+                        Xin chào {user.Fullname ?? user.Username},
+                        Cảm ơn bạn đã đặt hàng tại Memora! 🎉
+                        Mã đơn hàng: #{order.Id}
+                        Ngày đặt: {DateTime.UtcNow:dd/MM/yyyy HH:mm}
+                        Tổng tiền: {order.TotalPrice:N0} VND
+                        Trạng thái: {order.Status}
+                        👉 Vui lòng truy cập website Memora để tiến hành thanh toán đơn hàng của bạn.
+                        Trân trọng,
+                        Đội ngũ Memora
+                    ";
+
+                    await _email.SendEmailAsync(user.Email, subject, message);
+                }
+            }
+
+            return result;
         }
 
         public async Task<int> UpdateOrderAsync(UpdateOrderRequest request)
@@ -83,7 +114,8 @@ namespace Memora.BackEnd.Services.Services
         {
             var o = await _orderRepository.GetOrderById(id);
 
-            return new OrderDto {
+            return new OrderDto
+            {
                 Id = o.Id,
                 Status = o.Status,
                 TotalPrice = o.TotalPrice,
