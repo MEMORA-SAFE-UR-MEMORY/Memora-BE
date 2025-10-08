@@ -90,23 +90,24 @@ namespace Memora.BackEnd.Services.Services
                 {
                     string subject = "Xác nhận đơn hàng của bạn";
                     string message = $@"
-                                Xin chào {user.Fullname ?? user.Username},
-                                Cảm ơn bạn đã đặt hàng tại Memora! 🎉
-                                📦 Thông tin đơn hàng:
-                                -------------------------------
-                                Mã đơn hàng: #{order.Id}
-                                Ngày đặt: {DateTime.UtcNow:dd/MM/yyyy HH:mm}
-                                Tổng tiền: {order.TotalPrice:N0} VND
-                                Trạng thái: {order.Status}
-                                👤 Thông tin người nhận:
-                                -------------------------------
-                                Họ tên: {order.Fullname}
-                                Số điện thoại: {order.PhoneNumber}
-                                Địa chỉ: {order.Address}
-                                👉 Vui lòng truy cập website Memora để tiến hành thanh toán đơn hàng của bạn.
-                                Trân trọng,
-                                Đội ngũ Memora
-                                ";
+Xin chào {user.Fullname ?? user.Username},
+Cảm ơn bạn đã đặt hàng tại Memora! 🎉
+Thông tin đơn hàng:
+-------------------------------
+Mã đơn hàng: #{order.Id}
+Ngày đặt: {DateTime.UtcNow:dd/MM/yyyy HH:mm}
+Tổng tiền: {order.TotalPrice:N0} VND
+Trạng thái: {order.Status}
+Thông tin người nhận:
+-------------------------------
+Họ tên: {order.Fullname}
+Số điện thoại: {order.PhoneNumber}
+Địa chỉ: {order.Address}
+-------------------------------
+Vui lòng truy cập website Memora để tiến hành thanh toán đơn hàng của bạn.
+Trân trọng,
+Đội ngũ Memora
+";
 
                     await _email.SendEmailAsync(user.Email, subject, message);
                 }
