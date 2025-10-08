@@ -37,6 +37,9 @@ namespace Memora.BackEnd.Services.Services
                     Address = o.User.Address,
                     PhoneNumber = o.User.PhoneNumber
                 },
+                PhoneNumber = o.PhoneNumber,
+                Fullname = o.Fullname,
+                Address = o.Address,
                 OrderAlbums = o.OrderAlbums.Select(oa => new OrderAlbumDto
                 {
                     Id = oa.Id,
@@ -58,11 +61,18 @@ namespace Memora.BackEnd.Services.Services
 
         public async Task<int> CreateOrderAsync(CreateOrderRequest request)
         {
+            //check userid
+            var user = await _userRepository.GetByIdAsync(request.UserId);
+            if (user == null) return 0;
+
             var order = new Order
             {
                 Status = request.Status,
                 TotalPrice = request.TotalPrice,
                 UserId = request.UserId,
+                Address = request.Address,
+                Fullname= request.Fullname,
+                PhoneNumber= request.PhoneNumber,
                 OrderAlbums = request.OrderAlbums.Select(oa => new OrderAlbum
                 {
                     AlbumId = oa.AlbumId,
@@ -76,21 +86,27 @@ namespace Memora.BackEnd.Services.Services
             // ✅ Sau khi tạo order thành công, gửi mail cho user
             if (result > 0)
             {
-                var user = await _userRepository.GetByIdAsync(request.UserId);
                 if (user != null && !string.IsNullOrEmpty(user.Email))
                 {
                     string subject = "Xác nhận đơn hàng của bạn";
                     string message = $@"
-                        Xin chào {user.Fullname ?? user.Username},
-                        Cảm ơn bạn đã đặt hàng tại Memora! 🎉
-                        Mã đơn hàng: #{order.Id}
-                        Ngày đặt: {DateTime.UtcNow:dd/MM/yyyy HH:mm}
-                        Tổng tiền: {order.TotalPrice:N0} VND
-                        Trạng thái: {order.Status}
-                        👉 Vui lòng truy cập website Memora để tiến hành thanh toán đơn hàng của bạn.
-                        Trân trọng,
-                        Đội ngũ Memora
-                    ";
+                                Xin chào {user.Fullname ?? user.Username},
+                                Cảm ơn bạn đã đặt hàng tại Memora! 🎉
+                                📦 Thông tin đơn hàng:
+                                -------------------------------
+                                Mã đơn hàng: #{order.Id}
+                                Ngày đặt: {DateTime.UtcNow:dd/MM/yyyy HH:mm}
+                                Tổng tiền: {order.TotalPrice:N0} VND
+                                Trạng thái: {order.Status}
+                                👤 Thông tin người nhận:
+                                -------------------------------
+                                Họ tên: {order.Fullname}
+                                Số điện thoại: {order.PhoneNumber}
+                                Địa chỉ: {order.Address}
+                                👉 Vui lòng truy cập website Memora để tiến hành thanh toán đơn hàng của bạn.
+                                Trân trọng,
+                                Đội ngũ Memora
+                                ";
 
                     await _email.SendEmailAsync(user.Email, subject, message);
                 }
@@ -128,6 +144,9 @@ namespace Memora.BackEnd.Services.Services
                     Address = o.User.Address,
                     PhoneNumber = o.User.PhoneNumber
                 },
+                PhoneNumber = o.PhoneNumber,
+                Fullname = o.Fullname,
+                Address = o.Address,
                 OrderAlbums = o.OrderAlbums.Select(oa => new OrderAlbumDto
                 {
                     Id = oa.Id,

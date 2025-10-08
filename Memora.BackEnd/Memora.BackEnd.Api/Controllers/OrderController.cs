@@ -46,6 +46,9 @@ namespace Memora.BackEnd.Api.Controllers
 
             var result = await _orderService.CreateOrderAsync(request);
 
+            if (result == 0)
+                return BadRequest(new { message = "UserId không hợp lệ!" });
+
             if (result > 0)
                 return Ok(new { message = "Tạo order thành công!" });
 

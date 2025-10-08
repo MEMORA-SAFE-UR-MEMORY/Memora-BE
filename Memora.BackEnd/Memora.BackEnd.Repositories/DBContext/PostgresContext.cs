@@ -387,9 +387,14 @@ public partial class PostgresContext : DbContext
             entity.HasIndex(e => e.Id, "orders_id_key").IsUnique();
 
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Address).HasColumnName("address");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(now() AT TIME ZONE 'utc'::text)")
                 .HasColumnName("created_at");
+            entity.Property(e => e.Fullname).HasColumnName("fullname");
+            entity.Property(e => e.PhoneNumber)
+                .HasColumnType("character varying")
+                .HasColumnName("phone_number");
             entity.Property(e => e.Status)
                 .HasDefaultValueSql("'đã đặt'::text")
                 .HasColumnName("status");

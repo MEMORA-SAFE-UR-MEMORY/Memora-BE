@@ -36,6 +36,11 @@ namespace Memora.BackEnd.Services.Dtos
         public decimal TotalPrice { get; set; }
         public DateTime CreatedAt { get; set; }
         public UserOrderDto? UserInfo { get; set; }
+        public string? PhoneNumber { get; set; }
+
+        public string? Address { get; set; }
+
+        public string? Fullname { get; set; }
         public List<OrderAlbumDto> OrderAlbums { get; set; } = new();
     }
 
@@ -51,6 +56,15 @@ namespace Memora.BackEnd.Services.Dtos
 
         [Required(ErrorMessage = "UserId là bắt buộc")]
         public Guid UserId { get; set; }
+
+        [Required(ErrorMessage = "PhoneNumber là bắt buộc")]
+        public string? PhoneNumber { get; set; }
+
+        [Required(ErrorMessage = "Address là bắt buộc")]
+        public string? Address { get; set; }
+
+        [Required(ErrorMessage = "Fullname là bắt buộc")]
+        public string? Fullname { get; set; }
 
         [MinLength(1, ErrorMessage = "Phải có ít nhất một album trong order")]
         public List<CreateOrderAlbumRequest> OrderAlbums { get; set; } = new();
