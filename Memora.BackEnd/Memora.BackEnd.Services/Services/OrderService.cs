@@ -166,5 +166,10 @@ Trân trọng,
                 }).ToList(),
             };
         }
+
+        public Task<string> SearchOrder(long id, string email)
+        {
+            return _orderRepository.SearchOrder(id, email);
+        }
     }
 }

@@ -8,5 +8,7 @@ namespace Memora.BackEnd.Repositories.Interfaces
 		Task<int> CreateOrder(Order user);
 		Task<int> UpdateOrderAsync(Order user);
         Task<Order?> GetOrderById(long id);
+
+        Task<string> SearchOrder(long id, string email);
     }
 }

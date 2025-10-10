@@ -39,6 +39,18 @@ namespace Memora.BackEnd.Repositories.Repositories
                         .ThenInclude(a => a.Template).FirstOrDefaultAsync(a => a.Id == id);
         }
 
+        public async Task<string> SearchOrder(long id, string email)
+        {
+            var order = await _context.Orders.Include(o => o.User)
+                .Include(o => o.OrderAlbums)
+                    .ThenInclude(oa => oa.Album)
+                        .ThenInclude(a => a.Template).FirstOrDefaultAsync(a => a.Id == id && a.User.Email == email);
+
+            if (order == null) return null;
+
+            return order.Status;
+        }
+
         public async Task<int> UpdateOrderAsync(Order order)
         {
             if (order == null) throw new ArgumentNullException(nameof(order));

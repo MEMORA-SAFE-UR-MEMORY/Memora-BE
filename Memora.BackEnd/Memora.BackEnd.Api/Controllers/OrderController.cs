@@ -65,5 +65,18 @@ namespace Memora.BackEnd.Api.Controllers
 
             return StatusCode(500, new { message = "Cập nhật order thất bại!" });
         }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchOrder([FromQuery] long id, [FromQuery] string email)
+        {
+            var status = await _orderService.SearchOrder(id,email);
+
+            if (status == null)
+            {
+                return Ok(new { message = "Không tìm thấy order :(" });
+            }
+
+            return Ok(status);
+        }
     }
 }
