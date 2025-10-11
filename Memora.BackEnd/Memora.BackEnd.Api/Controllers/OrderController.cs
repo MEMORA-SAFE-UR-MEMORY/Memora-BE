@@ -25,7 +25,7 @@ namespace Memora.BackEnd.Api.Controllers
             return Ok(orders);
         }
 
-        [HttpGet("getById/{id:long}")]
+        [HttpGet("getById/{id}")]
         public async Task<IActionResult> GetOrderById([FromRoute]Guid id)
         {
             var order = await _orderService.GetOrderById(id);
