@@ -31,7 +31,7 @@ namespace Memora.BackEnd.Services.Dtos
 
     public class OrderDto
     {
-        public long Id { get; set; }
+        public Guid Id { get; set; }
         public string Status { get; set; } = null!;
         public decimal TotalPrice { get; set; }
         public DateTime CreatedAt { get; set; }
@@ -86,7 +86,7 @@ namespace Memora.BackEnd.Services.Dtos
     public class UpdateOrderRequest
     {
         [Required]
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
         [Required(ErrorMessage = "Trạng thái order là bắt buộc")]
         [StringLength(50, ErrorMessage = "Trạng thái không được quá 50 ký tự")]

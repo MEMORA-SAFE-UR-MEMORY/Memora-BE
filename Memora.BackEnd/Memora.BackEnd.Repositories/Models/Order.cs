@@ -5,8 +5,6 @@ namespace Memora.BackEnd.Repositories.Models;
 
 public partial class Order
 {
-    public long Id { get; set; }
-
     public string Status { get; set; } = null!;
 
     public decimal TotalPrice { get; set; }
@@ -22,6 +20,8 @@ public partial class Order
     public string? Address { get; set; }
 
     public string? Fullname { get; set; }
+
+    public Guid Id { get; set; }
 
     public virtual ICollection<OrderAlbum> OrderAlbums { get; set; } = new List<OrderAlbum>();
 

@@ -17,6 +17,8 @@ public partial class Album
 
     public DateTime? UpdatedAt { get; set; }
 
+    public bool IsOrdered { get; set; }
+
     public virtual ICollection<AlbumPage> AlbumPages { get; set; } = new List<AlbumPage>();
 
     public virtual ICollection<OrderAlbum> OrderAlbums { get; set; } = new List<OrderAlbum>();

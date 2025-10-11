@@ -15,7 +15,7 @@ public partial class OrderAlbum
 
     public long AlbumId { get; set; }
 
-    public long OrderId { get; set; }
+    public Guid OrderId { get; set; }
 
     public virtual Album Album { get; set; } = null!;
 

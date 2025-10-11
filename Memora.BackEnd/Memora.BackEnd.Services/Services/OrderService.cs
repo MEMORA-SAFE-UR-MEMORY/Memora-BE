@@ -92,14 +92,14 @@ namespace Memora.BackEnd.Services.Services
                     string message = $@"
 Xin chào {user.Fullname ?? user.Username},
 Cảm ơn bạn đã đặt hàng tại Memora! 🎉
-Thông tin đơn hàng:
 -------------------------------
+Thông tin đơn hàng:
 Mã đơn hàng: #{order.Id}
 Ngày đặt: {DateTime.UtcNow:dd/MM/yyyy HH:mm}
 Tổng tiền: {order.TotalPrice:N0} VND
 Trạng thái: {order.Status}
-Thông tin người nhận:
 -------------------------------
+Thông tin người nhận:
 Họ tên: {order.Fullname}
 Số điện thoại: {order.PhoneNumber}
 Địa chỉ: {order.Address}
@@ -127,7 +127,7 @@ Trân trọng,
             return await _orderRepository.UpdateOrderAsync(order);
         }
 
-        public async Task<OrderDto?> GetOrderById(long id)
+        public async Task<OrderDto?> GetOrderById(Guid id)
         {
             var o = await _orderRepository.GetOrderById(id);
 
@@ -167,7 +167,7 @@ Trân trọng,
             };
         }
 
-        public Task<string> SearchOrder(long id, string email)
+        public Task<string> SearchOrder(Guid id, string email)
         {
             return _orderRepository.SearchOrder(id, email);
         }

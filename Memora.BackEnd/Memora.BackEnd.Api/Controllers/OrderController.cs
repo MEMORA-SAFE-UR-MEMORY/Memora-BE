@@ -26,7 +26,7 @@ namespace Memora.BackEnd.Api.Controllers
         }
 
         [HttpGet("getById/{id:long}")]
-        public async Task<IActionResult> GetOrderById([FromRoute]long id)
+        public async Task<IActionResult> GetOrderById([FromRoute]Guid id)
         {
             var order = await _orderService.GetOrderById(id);
 
@@ -67,7 +67,7 @@ namespace Memora.BackEnd.Api.Controllers
         }
 
         [HttpGet("search")]
-        public async Task<IActionResult> SearchOrder([FromQuery] long id, [FromQuery] string email)
+        public async Task<IActionResult> SearchOrder([FromQuery] Guid id, [FromQuery] string email)
         {
             var status = await _orderService.SearchOrder(id,email);
 

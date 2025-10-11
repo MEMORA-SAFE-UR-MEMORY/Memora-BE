@@ -7,8 +7,8 @@ namespace Memora.BackEnd.Services.Interfaces
         Task<List<OrderDto>> GetAllAsync();
         Task<int> CreateOrderAsync(CreateOrderRequest request);
         Task<int> UpdateOrderAsync(UpdateOrderRequest request);
-        Task<OrderDto?> GetOrderById(long id);
+        Task<OrderDto?> GetOrderById(Guid id);
 
-        Task<string> SearchOrder(long id, string email);
+        Task<string> SearchOrder(Guid id, string email);
     }
 }

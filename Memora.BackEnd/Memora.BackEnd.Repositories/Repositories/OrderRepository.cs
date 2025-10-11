@@ -31,7 +31,7 @@ namespace Memora.BackEnd.Repositories.Repositories
         }
 
 
-        public async Task<Order?> GetOrderById(long id)
+        public async Task<Order?> GetOrderById(Guid id)
         {
             return await _context.Orders.Include(o => o.User)
                 .Include(o => o.OrderAlbums)
@@ -39,7 +39,7 @@ namespace Memora.BackEnd.Repositories.Repositories
                         .ThenInclude(a => a.Template).FirstOrDefaultAsync(a => a.Id == id);
         }
 
-        public async Task<string> SearchOrder(long id, string email)
+        public async Task<string> SearchOrder(Guid id, string email)
         {
             var order = await _context.Orders.Include(o => o.User)
                 .Include(o => o.OrderAlbums)
