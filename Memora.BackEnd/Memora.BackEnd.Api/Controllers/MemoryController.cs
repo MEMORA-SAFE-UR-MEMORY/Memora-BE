@@ -6,12 +6,12 @@ namespace Memora.BackEnd.Api.Controllers
 {
 	[Route("api/[controller]")]
 	[ApiController]
-	public class AlbumController : ControllerBase
+	public class MemoryController : ControllerBase
 	{
-		private readonly IAlbumService _albumService;
-		public AlbumController(IAlbumService albumService)
+		private readonly IMemoryService _memoryService;
+		public MemoryController(IMemoryService memoryService)
 		{
-			_albumService = albumService;
+			_memoryService = memoryService;
 		}
 
 		[HttpPut("upload-1-photo")]
@@ -19,7 +19,7 @@ namespace Memora.BackEnd.Api.Controllers
 		{
 			if (ModelState.IsValid)
 			{
-				var result = await _albumService.UpdateAsync(dto);
+				var result = await _memoryService.UpdateAsync(dto);
 				if (result > 0)
 				{
 					return Ok("Saved Successfully!");
