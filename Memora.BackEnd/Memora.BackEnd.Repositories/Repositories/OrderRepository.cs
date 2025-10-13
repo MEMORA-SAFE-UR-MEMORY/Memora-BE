@@ -69,5 +69,33 @@ namespace Memora.BackEnd.Repositories.Repositories
 
             return await _context.SaveChangesAsync();
         }
-    }
+
+		public async Task<Order?> GetByPayOsOrderCodeAsync(long orderCode)
+		{
+			return await _context.Orders.FirstOrDefaultAsync(o => o.PayOsOrderCode == orderCode);
+		}
+
+		public async Task<int> UpdateStatusByPayOsOrderCodeAsync(long orderCode, string status)
+		{
+			var order = await _context.Orders.AsTracking().FirstOrDefaultAsync(o => o.PayOsOrderCode == orderCode);
+			if (order == null)
+			{
+				return 0;
+			}
+			order.Status = status;
+			order.UpdatedAt = DateTime.UtcNow;
+			return await _context.SaveChangesAsync();
+		}
+
+		public async Task<int> SetPayOsOrderCodeAsync(Guid orderId, long orderCode)
+		{
+			var order = await _context.Orders.AsTracking().FirstOrDefaultAsync(o => o.Id == orderId);
+			if (order == null)
+			{
+				return 0;
+			}
+			order.PayOsOrderCode = orderCode;
+			return await _context.SaveChangesAsync();
+		}
+	}
 }

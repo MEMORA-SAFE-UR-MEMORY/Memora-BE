@@ -10,5 +10,9 @@ namespace Memora.BackEnd.Repositories.Interfaces
         Task<Order?> GetOrderById(Guid id);
 
         Task<string> SearchOrder(Guid id, string email);
-    }
+
+		Task<Order?> GetByPayOsOrderCodeAsync(long orderCode);
+		Task<int> UpdateStatusByPayOsOrderCodeAsync(long orderCode, string status);
+		Task<int> SetPayOsOrderCodeAsync(Guid orderId, long orderCode);
+	}
 }

@@ -23,6 +23,8 @@ public partial class Order
 
     public Guid Id { get; set; }
 
+    public long? PayOsOrderCode { get; set; }
+
     public virtual ICollection<OrderAlbum> OrderAlbums { get; set; } = new List<OrderAlbum>();
 
     public virtual User User { get; set; } = null!;
