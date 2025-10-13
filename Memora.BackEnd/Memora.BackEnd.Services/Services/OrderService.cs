@@ -2,7 +2,8 @@
 using Memora.BackEnd.Repositories.Models;
 using Memora.BackEnd.Services.Dtos;
 using Memora.BackEnd.Services.Interfaces;
-using Memora.BackEnd.Services.Libraries; // thêm dòng này để dùng EmailService
+using Memora.BackEnd.Services.Libraries;
+using Microsoft.Extensions.Configuration; // thêm dòng này để dùng EmailService
 
 namespace Memora.BackEnd.Services.Services
 {
@@ -11,13 +12,17 @@ namespace Memora.BackEnd.Services.Services
         private readonly IOrderRepository _orderRepository;
         private readonly IUserRepository _userRepository; // cần để lấy thông tin user
         private readonly EmailService _email; // thêm EmailService
+		private readonly IConfiguration _configuration;
+		private readonly IPayOsService _payOsService;
 
-        public OrderService(IOrderRepository orderRepository, IUserRepository userRepository, EmailService email)
+		public OrderService(IOrderRepository orderRepository, IUserRepository userRepository, EmailService email, IConfiguration configuration, IPayOsService payOsService)
         {
             _orderRepository = orderRepository;
             _userRepository = userRepository;
             _email = email;
-        }
+            _configuration = configuration;
+            _payOsService = payOsService;
+		}
 
         public async Task<List<OrderDto>> GetAllAsync()
         {
@@ -171,5 +176,60 @@ Trân trọng,
         {
             return _orderRepository.SearchOrder(id, email);
         }
-    }
+
+		public async Task<PaymentLinkDto?> CreatePaymentLinkForOrderAsync(Guid orderId)
+		{
+			var order = await _orderRepository.GetOrderById(orderId);
+			if (order == null)
+			{
+				// Hoặc throw exception
+				return null;
+			}
+
+			// Tạo order code duy nhất cho mỗi lần thanh toán
+			var payOsOrderCode = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
+			await _orderRepository.SetPayOsOrderCodeAsync(orderId, payOsOrderCode);
+
+			var amount = (int)order.TotalPrice;
+			var description = $"ThanhToan#{order.Id.ToString()[..6]}";
+
+			// Lấy URL từ config hoặc hardcode
+			var clientBaseUrl = _configuration["App:ClientUrl"]
+				?? throw new InvalidOperationException("App:ClientUrl is not configured in appsettings.json");
+			var returnUrl = $"{clientBaseUrl}/success";
+			var cancelUrl = $"{clientBaseUrl}/failed";
+
+			return await _payOsService.CreatePaymentLink(payOsOrderCode, amount, description, cancelUrl, returnUrl);
+		}
+
+		public async Task<int> UpdateOrderStatusFromWebhookAsync(long orderCode, string status)
+		{
+			var order = await _orderRepository.GetByPayOsOrderCodeAsync(orderCode);
+			if (order == null) return 0;
+
+			string newStatus = status switch
+			{
+				"PAID" => "Đã thanh toán",
+				"CANCELLED" => "Đã hủy",
+				"EXPIRED" => "Hết hạn",
+				_ => order.Status
+			};
+
+			if (order.Status == newStatus) return 1;
+
+			var result = await _orderRepository.UpdateStatusByPayOsOrderCodeAsync(orderCode, newStatus);
+
+			if (result > 0 && newStatus == "Đã thanh toán")
+			{
+				var user = await _userRepository.GetByIdAsync(order.UserId);
+				if (user != null && !string.IsNullOrEmpty(user.Email))
+				{
+					string subject = "Thanh toán đơn hàng thành công";
+					string message = $"Chào {user.Fullname ?? user.Username},\n\nĐơn hàng #{order.Id} của bạn đã được thanh toán thành công!\nChúng tôi sẽ xử lý và giao hàng cho bạn trong thời gian sớm nhất.\n\nCảm ơn bạn đã mua sắm tại Memora!";
+					await _email.SendEmailAsync(user.Email, subject, message);
+				}
+			}
+			return result;
+		}
+	}
 }

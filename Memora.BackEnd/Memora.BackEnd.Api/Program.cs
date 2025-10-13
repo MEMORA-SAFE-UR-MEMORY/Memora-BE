@@ -24,7 +24,7 @@ builder.Services.AddCors(options =>
 	options.AddPolicy("AllowAngular", policy =>
 	{
 		policy.WithOrigins("http://localhost:4200", "https://memora-official.com",
-                "http://localhost:3000")
+				"http://localhost:3000")
 			  .AllowAnyHeader()
 			  .AllowAnyMethod();
 	});
@@ -49,6 +49,8 @@ builder.Services.AddDbContext<PostgresContext>(options =>
 // Settings
 // ==========================================================
 builder.Services.Configure<JWTSettings>(builder.Configuration.GetSection("JwtSettings"));
+// THÊM DÒNG NÀY ĐỂ NẠP CẤU HÌNH PAYOS
+builder.Services.Configure<PayOSSettings>(builder.Configuration.GetSection("PayOS"));
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JWTSettings>()
 	?? throw new InvalidOperationException("JWT Settings are not configured.");
@@ -98,6 +100,15 @@ builder.Services.AddScoped<IAlbumService, AlbumService>();
 builder.Services.AddScoped<ISupabaseFileService, SupabaseFileService>();
 
 builder.Services.AddScoped<EmailService>();
+
+builder.Services.AddHttpClient<IPayOsService, PayOsService>((serviceProvider, client) =>
+{
+	var payOsSettings = serviceProvider.GetRequiredService<IConfiguration>().GetSection("PayOS").Get<PayOSSettings>()
+						?? throw new InvalidOperationException("PayOS settings not configured.");
+	client.BaseAddress = new Uri(payOsSettings.BaseUrl);
+	client.DefaultRequestHeaders.Add("x-client-id", payOsSettings.ClientId);
+	client.DefaultRequestHeaders.Add("x-api-key", payOsSettings.ApiKey);
+});
 // ==========================================================
 // Controllers
 // ==========================================================
@@ -157,7 +168,7 @@ app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
 	c.SwaggerEndpoint("/swagger/v1/swagger.json", "Memora API v1");
-	c.RoutePrefix = string.Empty; 
+	c.RoutePrefix = string.Empty;
 });
 
 app.UseHttpsRedirection();
