@@ -92,11 +92,13 @@ builder.Services.AddScoped<IUserThemeRepository, UserThemeRepository>();
 builder.Services.AddScoped<IItemRepository, ItemRepository>();
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 builder.Services.AddScoped<IAlbumRepository, AlbumRepository>();
+builder.Services.AddScoped<IMemoryRepository, MemoryRepository>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPurchaseService, PurchaseService>();
 builder.Services.AddScoped<IAlbumService, AlbumService>();
+builder.Services.AddScoped<IMemoryService, MemoryService>();
 builder.Services.AddScoped<ISupabaseFileService, SupabaseFileService>();
 
 builder.Services.AddScoped<EmailService>();

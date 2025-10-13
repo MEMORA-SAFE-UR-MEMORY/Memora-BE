@@ -5,31 +5,30 @@ using Memora.BackEnd.Services.Interfaces;
 
 namespace Memora.BackEnd.Services.Services
 {
-	public class AlbumService : IAlbumService
+	public class MemoryService : IMemoryService
 	{
-		private readonly IAlbumRepository _repo;
+		private readonly IMemoryRepository _repo;
 		private readonly ISupabaseFileService _supabaseFileService;
-		public AlbumService(IAlbumRepository repo, ISupabaseFileService supabaseFileService)
+		public MemoryService(IMemoryRepository repo, ISupabaseFileService supabaseFileService)
 		{
 			_repo = repo;
 			_supabaseFileService = supabaseFileService;
 		}
-
 		public async Task<int> UpdateAsync(ImageRequest dto)
 		{
 			try
 			{
-				string photoUrl = string.Empty;
+				string filePath = string.Empty;
 				if (dto.Photo != null && dto.Photo.Length > 0)
-					photoUrl = await _supabaseFileService.UploadFileAsync(dto.Photo, "user_album", dto.Id.ToString());
+					filePath = await _supabaseFileService.UploadFileSaveVersionAsync(dto.Photo, "user_memory", dto.Id.ToString());
 
-				var albumSlot = new AlbumPageSlot
+				var memory = new Memory
 				{
 					Id = dto.Id,
-					PhotoUrl = photoUrl,
+					FilePath = filePath,
 				};
 
-				var result = await _repo.UpdateAsync(albumSlot);
+				var result = await _repo.UpdateAsync(memory);
 				if (result <= 0) return -1;
 				return result;
 			}
