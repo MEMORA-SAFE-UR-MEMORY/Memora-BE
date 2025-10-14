@@ -21,7 +21,7 @@ namespace Memora.BackEnd.Services.Services
 			{
 				string photoUrl = string.Empty;
 				if (dto.Photo != null && dto.Photo.Length > 0)
-					photoUrl = await _supabaseFileService.UploadFileAsync(dto.Photo, "user_album", dto.Id.ToString());
+					photoUrl = await _supabaseFileService.UploadFileSaveVersionAsync(dto.Photo, "user_album", dto.Id.ToString());
 
 				var albumSlot = new AlbumPageSlot
 				{
