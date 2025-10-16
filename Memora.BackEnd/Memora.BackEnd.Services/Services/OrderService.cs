@@ -191,7 +191,7 @@ Trân trọng,
 			await _orderRepository.SetPayOsOrderCodeAsync(orderId, payOsOrderCode);
 
 			var amount = (int)order.TotalPrice;
-			var description = $"ThanhToan#{order.Id.ToString()[..6]}";
+			var description = $"Memora ThanhToanAlbum_{order.Id.ToString()[..4]}";
 
 			var clientBaseUrl = _configuration["App:ClientUrl"]
 				?? throw new InvalidOperationException("App:ClientUrl is not configured in appsettings.json");
@@ -217,11 +217,23 @@ Trân trọng,
 					var user = await _userRepository.GetByIdAsync(order.UserId);
 					if (user != null && !string.IsNullOrEmpty(user.Email))
 					{
-						string subject = "Thanh toán đơn hàng thành công";
-						string message = $"Chào {user.Fullname ?? user.Username},\n\n" +
-										 $"Đơn hàng #{order.Id} của bạn đã được thanh toán thành công!\n" +
-										 "Chúng tôi sẽ xử lý và giao hàng cho bạn trong thời gian sớm nhất.\n\n" +
-										 "Cảm ơn bạn đã mua sắm tại Memora!";
+                        var logoUrl = "https://yzzispiaqactvbvsjwcw.supabase.co/storage/v1/object/public/System/memora.png";
+						var pdfPath = GenerateInvoicePdf.GenerateInvoicePdfAsync(order, user, logoUrl);
+
+						string subject = "Hóa đơn thanh toán thành công – Memora: Triển lãm ký ức";
+						string message = $@"
+                                            Chào {user.Fullname ?? user.Username},
+
+                                            Cảm ơn bạn đã mua album tại Memora – Triển lãm ký ức.
+                                            Đơn hàng #{order.Id} của bạn đã được thanh toán thành công.
+
+                                            Thông tin chi tiết trong file hóa đơn đính kèm.
+
+                                            Trân trọng,
+                                            Đội ngũ Memora
+                                            Hotline: 0559 670 539
+                                            Email: memora940@gmail.com
+                                            ";
 						await _email.SendEmailAsync(user.Email, subject, message);
 					}
 				}

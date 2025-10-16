@@ -21,7 +21,7 @@ namespace Memora.BackEnd.Services.Dtos
 		public string Reference { get; set; } = string.Empty;
 
 		[JsonPropertyName("transactionDateTime")]
-		public DateTime TransactionDateTime { get; set; }
+		public string TransactionDateTime { get; set; } = string.Empty;
 
 		[JsonPropertyName("paymentLinkId")]
 		public string PaymentLinkId { get; set; } = string.Empty;
