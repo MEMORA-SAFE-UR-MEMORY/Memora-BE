@@ -184,18 +184,15 @@ Trân trọng,
 			var order = await _orderRepository.GetOrderById(orderId);
 			if (order == null)
 			{
-				// Hoặc throw exception
 				return null;
 			}
 
-			// Tạo order code duy nhất cho mỗi lần thanh toán
 			var payOsOrderCode = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
 			await _orderRepository.SetPayOsOrderCodeAsync(orderId, payOsOrderCode);
 
 			var amount = (int)order.TotalPrice;
 			var description = $"ThanhToan#{order.Id.ToString()[..6]}";
 
-			// Lấy URL từ config hoặc hardcode
 			var clientBaseUrl = _configuration["App:ClientUrl"]
 				?? throw new InvalidOperationException("App:ClientUrl is not configured in appsettings.json");
 			var returnUrl = $"{clientBaseUrl}/success";
@@ -204,34 +201,33 @@ Trân trọng,
 			return await _payOsService.CreatePaymentLink(payOsOrderCode, amount, description, cancelUrl, returnUrl);
 		}
 
-		public async Task<int> UpdateOrderStatusFromWebhookAsync(long orderCode, string status)
+		public async Task<int> UpdateOrderStatusFromWebhookAsync(long orderCode, string code)
 		{
 			var order = await _orderRepository.GetByPayOsOrderCodeAsync(orderCode);
 			if (order == null) return 0;
 
-			string newStatus = status switch
+			if (code == "00")
 			{
-				"PAID" => "Đã thanh toán",
-				"CANCELLED" => "Đã hủy",
-				"EXPIRED" => "Hết hạn",
-				_ => order.Status
-			};
+				if (order.Status == "Đã thanh toán") return 1;
 
-			if (order.Status == newStatus) return 1;
+				var result = await _orderRepository.UpdateStatusByPayOsOrderCodeAsync(orderCode, "Đã thanh toán");
 
-			var result = await _orderRepository.UpdateStatusByPayOsOrderCodeAsync(orderCode, newStatus);
-
-			if (result > 0 && newStatus == "Đã thanh toán")
-			{
-				var user = await _userRepository.GetByIdAsync(order.UserId);
-				if (user != null && !string.IsNullOrEmpty(user.Email))
+				if (result > 0)
 				{
-					string subject = "Thanh toán đơn hàng thành công";
-					string message = $"Chào {user.Fullname ?? user.Username},\n\nĐơn hàng #{order.Id} của bạn đã được thanh toán thành công!\nChúng tôi sẽ xử lý và giao hàng cho bạn trong thời gian sớm nhất.\n\nCảm ơn bạn đã mua sắm tại Memora!";
-					await _email.SendEmailAsync(user.Email, subject, message);
+					var user = await _userRepository.GetByIdAsync(order.UserId);
+					if (user != null && !string.IsNullOrEmpty(user.Email))
+					{
+						string subject = "Thanh toán đơn hàng thành công";
+						string message = $"Chào {user.Fullname ?? user.Username},\n\n" +
+										 $"Đơn hàng #{order.Id} của bạn đã được thanh toán thành công!\n" +
+										 "Chúng tôi sẽ xử lý và giao hàng cho bạn trong thời gian sớm nhất.\n\n" +
+										 "Cảm ơn bạn đã mua sắm tại Memora!";
+						await _email.SendEmailAsync(user.Email, subject, message);
+					}
 				}
+				return result;
 			}
-			return result;
+			return 1;
 		}
 	}
 }

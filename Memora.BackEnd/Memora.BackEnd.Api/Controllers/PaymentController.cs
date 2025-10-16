@@ -53,6 +53,12 @@ namespace Memora.BackEnd.Api.Controllers
 		{
 			_logger.LogInformation("Received PayOS webhook: {WebhookBody}", JsonSerializer.Serialize(webhookRequest));
 
+			if (webhookRequest == null || webhookRequest.Data == null || string.IsNullOrEmpty(webhookRequest.Signature))
+			{
+				_logger.LogWarning("Invalid webhook request.");
+				return BadRequest(new { message = "Invalid request" });
+			}
+
 			if (!_payOsService.VerifySignature(webhookRequest.Data, webhookRequest.Signature))
 			{
 				_logger.LogWarning("Webhook signature verification failed.");
@@ -68,8 +74,8 @@ namespace Memora.BackEnd.Api.Controllers
 					return BadRequest(new { message = "Invalid data" });
 				}
 
-				_logger.LogInformation("Webhook signature verified. Processing order code: {OrderCode}, Status: {Status}", webhookData.OrderCode, webhookData.Status);
-				await _orderService.UpdateOrderStatusFromWebhookAsync(webhookData.OrderCode, webhookData.Status);
+				_logger.LogInformation($"Webhook signature verified. Processing order code: {webhookData.OrderCode}");
+				await _orderService.UpdateOrderStatusFromWebhookAsync(webhookData.OrderCode, webhookData.Code);
 
 				return Ok();
 			}
