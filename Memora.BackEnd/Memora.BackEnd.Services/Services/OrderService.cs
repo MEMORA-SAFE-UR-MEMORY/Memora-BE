@@ -3,98 +3,102 @@ using Memora.BackEnd.Repositories.Models;
 using Memora.BackEnd.Services.Dtos;
 using Memora.BackEnd.Services.Interfaces;
 using Memora.BackEnd.Services.Libraries;
-using Microsoft.Extensions.Configuration; // thêm dòng này để dùng EmailService
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using MimeKit;
+using System.Globalization;
+using System.Text;
 
 namespace Memora.BackEnd.Services.Services
 {
-    public class OrderService : IOrderService
-    {
-        private readonly IOrderRepository _orderRepository;
-        private readonly IUserRepository _userRepository; // cần để lấy thông tin user
-        private readonly EmailService _email; // thêm EmailService
+	public class OrderService : IOrderService
+	{
+		private readonly IOrderRepository _orderRepository;
+		private readonly IUserRepository _userRepository;
+		private readonly EmailService _email;
 		private readonly IConfiguration _configuration;
 		private readonly IPayOsService _payOsService;
+		private readonly ILogger<OrderService> _logger;
 
-		public OrderService(IOrderRepository orderRepository, IUserRepository userRepository, EmailService email, IConfiguration configuration, IPayOsService payOsService)
-        {
-            _orderRepository = orderRepository;
-            _userRepository = userRepository;
-            _email = email;
-            _configuration = configuration;
-            _payOsService = payOsService;
+		public OrderService(IOrderRepository orderRepository, IUserRepository userRepository, EmailService email, IConfiguration configuration, IPayOsService payOsService, ILogger<OrderService> logger)
+		{
+			_orderRepository = orderRepository;
+			_userRepository = userRepository;
+			_email = email;
+			_configuration = configuration;
+			_payOsService = payOsService;
+			_logger = logger;
 		}
 
-        public async Task<List<OrderDto>> GetAllAsync()
-        {
-            var orders = await _orderRepository.GetAll();
+		public async Task<List<OrderDto>> GetAllAsync()
+		{
+			var orders = await _orderRepository.GetAll();
 
-            return orders.Select(o => new OrderDto
-            {
-                Id = o.Id,
-                Status = o.Status,
-                TotalPrice = o.TotalPrice,
-                CreatedAt = o.CreatedAt,
-                UserInfo = new UserOrderDto
-                {
-                    Id = o.UserId,
-                    Username = o.User.Username,
-                    Fullname = o.User.Fullname,
-                    Address = o.User.Address,
-                    PhoneNumber = o.User.PhoneNumber
-                },
-                PhoneNumber = o.PhoneNumber,
-                Fullname = o.Fullname,
-                Address = o.Address,
-                OrderAlbums = o.OrderAlbums.Select(oa => new OrderAlbumDto
-                {
-                    Id = oa.Id,
-                    AlbumDto = new AlbumDto
-                    {
-                        Id = oa.Album.Id,
-                        Name = oa.Album.Name,
-                        Template = new AlbumTemplateDto
-                        {
-                            Id = oa.Album.Template.Id,
-                            Name = oa.Album.Template.Name
-                        }
-                    },
-                    Price = oa.Price,
-                    Quantity = oa.Quantity
-                }).ToList()
-            }).ToList();
-        }
+			return orders.Select(o => new OrderDto
+			{
+				Id = o.Id,
+				Status = o.Status,
+				TotalPrice = o.TotalPrice,
+				CreatedAt = o.CreatedAt,
+				UserInfo = new UserOrderDto
+				{
+					Id = o.UserId,
+					Username = o.User.Username,
+					Fullname = o.User.Fullname,
+					Address = o.User.Address,
+					PhoneNumber = o.User.PhoneNumber
+				},
+				PhoneNumber = o.PhoneNumber,
+				Fullname = o.Fullname,
+				Address = o.Address,
+				OrderAlbums = o.OrderAlbums.Select(oa => new OrderAlbumDto
+				{
+					Id = oa.Id,
+					AlbumDto = new AlbumDto
+					{
+						Id = oa.Album.Id,
+						Name = oa.Album.Name,
+						Template = new AlbumTemplateDto
+						{
+							Id = oa.Album.Template.Id,
+							Name = oa.Album.Template.Name
+						}
+					},
+					Price = oa.Price,
+					Quantity = oa.Quantity
+				}).ToList()
+			}).ToList();
+		}
 
-        public async Task<int> CreateOrderAsync(CreateOrderRequest request)
-        {
-            //check userid
-            var user = await _userRepository.GetByIdAsync(request.UserId);
-            if (user == null) return 0;
+		public async Task<int> CreateOrderAsync(CreateOrderRequest request)
+		{
+			var user = await _userRepository.GetByIdAsync(request.UserId);
+			if (user == null) return 0;
 
-            var order = new Order
-            {
-                Status = request.Status,
-                TotalPrice = request.TotalPrice,
-                UserId = request.UserId,
-                Address = request.Address,
-                Fullname= request.Fullname,
-                PhoneNumber= request.PhoneNumber,
-                OrderAlbums = request.OrderAlbums.Select(oa => new OrderAlbum
-                {
-                    AlbumId = oa.AlbumId,
-                    Quantity = oa.Quantity,
-                    Price = oa.Price
-                }).ToList()
-            };
+			var order = new Order
+			{
+				Status = request.Status,
+				TotalPrice = request.TotalPrice,
+				UserId = request.UserId,
+				Address = request.Address,
+				Fullname = request.Fullname,
+				PhoneNumber = request.PhoneNumber,
+				OrderAlbums = request.OrderAlbums.Select(oa => new OrderAlbum
+				{
+					AlbumId = oa.AlbumId,
+					Quantity = oa.Quantity,
+					Price = oa.Price
+				}).ToList()
+			};
 
-            var result = await _orderRepository.CreateOrder(order);
+			var result = await _orderRepository.CreateOrder(order);
 
-            // ✅ Sau khi tạo order thành công, gửi mail cho user
-            if (result > 0)
-            {
-                if (user != null && !string.IsNullOrEmpty(user.Email))
-                {
-                    string subject = "Xác nhận đơn hàng của bạn";
-                    string message = $@"
+			if (result > 0)
+			{
+				if (user != null && !string.IsNullOrEmpty(user.Email))
+				{
+					string subject = "Xác nhận đơn hàng của bạn";
+					string message = $@"
 Xin chào {user.Fullname ?? user.Username},
 Cảm ơn bạn đã đặt hàng tại Memora! 🎉
 -------------------------------
@@ -116,68 +120,72 @@ Trân trọng,
 Đội ngũ Memora
 ";
 
-                    await _email.SendEmailAsync(user.Email, subject, message);
-                }
-            }
+					await _email.SendEmailAsync(user.Email, subject, message);
+				}
+			}
 
-            return result;
-        }
+			return result;
+		}
 
-        public async Task<int> UpdateOrderAsync(UpdateOrderRequest request)
-        {
-            var order = new Order
-            {
-                Id = request.Id,
-                Status = request.Status
-            };
+		public async Task<int> UpdateOrderAsync(UpdateOrderRequest request)
+		{
+			var order = new Order
+			{
+				Id = request.Id,
+				Status = request.Status
+			};
 
-            return await _orderRepository.UpdateOrderAsync(order);
-        }
+			return await _orderRepository.UpdateOrderAsync(order);
+		}
 
-        public async Task<OrderDto?> GetOrderById(Guid id)
-        {
-            var o = await _orderRepository.GetOrderById(id);
+		public async Task<OrderDto?> GetOrderById(Guid id)
+		{
+			var o = await _orderRepository.GetOrderById(id);
+			if (o == null)
+			{
+				return null;
+			}
 
-            return new OrderDto
-            {
-                Id = o.Id,
-                Status = o.Status,
-                TotalPrice = o.TotalPrice,
-                CreatedAt = o.CreatedAt,
-                UserInfo = new UserOrderDto
-                {
-                    Id = o.UserId,
-                    Username = o.User.Username,
-                    Fullname = o.User.Fullname,
-                    Address = o.User.Address,
-                    PhoneNumber = o.User.PhoneNumber
-                },
-                PhoneNumber = o.PhoneNumber,
-                Fullname = o.Fullname,
-                Address = o.Address,
-                OrderAlbums = o.OrderAlbums.Select(oa => new OrderAlbumDto
-                {
-                    Id = oa.Id,
-                    AlbumDto = new AlbumDto
-                    {
-                        Id = oa.Album.Id,
-                        Name = oa.Album.Name,
-                        Template = new AlbumTemplateDto
-                        {
-                            Id = oa.Album.Template.Id,
-                            Name = oa.Album.Template.Name
-                        }
-                    },
-                    Price = oa.Price,
-                    Quantity = oa.Quantity
-                }).ToList(),
-            };
-        }
+			return new OrderDto
+			{
+				Id = o.Id,
+				Status = o.Status,
+				TotalPrice = o.TotalPrice,
+				CreatedAt = o.CreatedAt,
+				UserInfo = new UserOrderDto
+				{
+					Id = o.UserId,
+					Username = o.User.Username,
+					Fullname = o.User.Fullname,
+					Address = o.User.Address,
+					PhoneNumber = o.User.PhoneNumber
+				},
+				PhoneNumber = o.PhoneNumber,
+				Fullname = o.Fullname,
+				Address = o.Address,
+				OrderAlbums = o.OrderAlbums.Select(oa => new OrderAlbumDto
+				{
+					Id = oa.Id,
+					AlbumDto = new AlbumDto
+					{
+						Id = oa.Album.Id,
+						Name = oa.Album.Name,
+						Template = new AlbumTemplateDto
+						{
+							Id = oa.Album.Template.Id,
+							Name = oa.Album.Template.Name
+						}
+					},
+					Price = oa.Price,
+					Quantity = oa.Quantity
+				}).ToList(),
+			};
+		}
 
-        public Task<string> SearchOrder(Guid id, string email)
-        {
-            return _orderRepository.SearchOrder(id, email);
-        }
+		public Task<string> SearchOrder(Guid id, string email)
+		{
+			return _orderRepository.SearchOrder(id, email);
+		}
 
 		public async Task<PaymentLinkDto?> CreatePaymentLinkForOrderAsync(Guid orderId)
 		{
@@ -206,40 +214,104 @@ Trân trọng,
 			var order = await _orderRepository.GetByPayOsOrderCodeAsync(orderCode);
 			if (order == null) return 0;
 
-			if (code == "00")
+			if (code == "00") 
 			{
-				if (order.Status == "Đã thanh toán") return 1;
+				if (order.Status == "Đã thanh toán") return 1; 
 
 				var result = await _orderRepository.UpdateStatusByPayOsOrderCodeAsync(orderCode, "Đã thanh toán");
 
 				if (result > 0)
 				{
-					var user = await _userRepository.GetByIdAsync(order.UserId);
+					var fullOrder = await _orderRepository.GetOrderById(order.Id);
+					if (fullOrder == null)
+					{
+						_logger.LogError("Could not find order with ID {OrderId} after updating status.", order.Id);
+						return 0;
+					}
+
+					var user = fullOrder.User;
 					if (user != null && !string.IsNullOrEmpty(user.Email))
 					{
-                        var logoUrl = "https://yzzispiaqactvbvsjwcw.supabase.co/storage/v1/object/public/System/memora.png";
-						var pdfPath = GenerateInvoicePdf.GenerateInvoicePdfAsync(order, user, logoUrl);
+						try
+						{
+							string subject = $"Hóa đơn thanh toán thành công – Đơn hàng #{fullOrder.PayOsOrderCode}";
+							var bodyBuilder = new BodyBuilder();
 
-						string subject = "Hóa đơn thanh toán thành công – Memora: Triển lãm ký ức";
-						string message = $@"
-                                            Chào {user.Fullname ?? user.Username},
+							var htmlBody = new StringBuilder();
+							htmlBody.Append(@"
+<div style='font-family: Arial, sans-serif; color: #333; line-height: 1.6; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px; background-color: #FAF6FF;'>
+    <div style='text-align: center; margin-bottom: 20px;'>
+        <img src='https://yzzispiaqactvbvsjwcw.supabase.co/storage/v1/object/public/System/memora.png' alt='Memora Logo' style='height: 50px;'>
+        <h1 style='color: #C58AC9; font-size: 24px; margin-top: 10px;'>Memora – Triển lãm ký ức</h1>
+        <h2 style='color: #6CA6E0; font-size: 18px; font-weight: normal;'>HÓA ĐƠN THANH TOÁN</h2>
+    </div>
+    <p>Chào <strong>");
+							htmlBody.Append(user.Fullname ?? user.Username);
+							htmlBody.Append(@"</strong>,</p>
+    <p>Cảm ơn bạn đã mua sắm tại Memora. Đơn hàng của bạn đã được thanh toán thành công!</p>
+    
+    <div style='margin-top: 25px; margin-bottom: 25px; padding: 15px; border: 1px solid #D9D9FF; border-radius: 5px; background-color: #fff;'>
+        <h3 style='margin-top: 0; color: #4B4B8F;'>Chi tiết đơn hàng</h3>
+        <p><strong>Mã đơn hàng:</strong> #");
+							htmlBody.Append(fullOrder.PayOsOrderCode);
+							htmlBody.Append(@"</p>
+        <p><strong>Ngày thanh toán:</strong> ");
+							htmlBody.Append(DateTime.Now.ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture));
+							htmlBody.Append(@"</p>
+        <table style='width: 100%; border-collapse: collapse; margin-top: 15px;'>
+            <thead style='background-color: #f2e9ff;'>
+                <tr>
+                    <th style='padding: 8px; border: 1px solid #D9D9FF; text-align: left;'>Sản phẩm</th>
+                    <th style='padding: 8px; border: 1px solid #D9D9FF; text-align: right;'>Số lượng</th>
+                    <th style='padding: 8px; border: 1px solid #D9D9FF; text-align: right;'>Đơn giá</th>
+                    <th style='padding: 8px; border: 1px solid #D9D9FF; text-align: right;'>Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>");
 
-                                            Cảm ơn bạn đã mua album tại Memora – Triển lãm ký ức.
-                                            Đơn hàng #{order.Id} của bạn đã được thanh toán thành công.
+							foreach (var item in fullOrder.OrderAlbums)
+							{
+								htmlBody.Append($@"
+                <tr>
+                    <td style='padding: 8px; border: 1px solid #D9D9FF;'>{item.Album.Name}</td>
+                    <td style='padding: 8px; border: 1px solid #D9D9FF; text-align: right;'>{item.Quantity}</td>
+                    <td style='padding: 8px; border: 1px solid #D9D9FF; text-align: right;'>{item.Price:N0} VND</td>
+                    <td style='padding: 8px; border: 1px solid #D9D9FF; text-align: right;'>{(item.Price * item.Quantity):N0} VND</td>
+                </tr>");
+							}
 
-                                            Thông tin chi tiết trong file hóa đơn đính kèm.
+							htmlBody.Append($@"
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan='3' style='padding: 8px; text-align: right; font-weight: bold;'>Tổng cộng</td>
+                    <td style='padding: 8px; border: 1px solid #D9D9FF; text-align: right; font-weight: bold;'>{fullOrder.TotalPrice:N0} VND</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    
+    <p>Đơn hàng của bạn sẽ sớm được xử lý và vận chuyển.</p>
+    <p>Trân trọng,<br><strong>Đội ngũ Memora</strong></p>
+    <hr style='border: none; border-top: 1px solid #eee; margin-top: 20px;' />
+    <div style='text-align: center; font-size: 0.8em; color: #777;'>
+        <p>Hotline: 0559 670 539 | Email: memora940@gmail.com | Website: <a href='https://memora-official.com' style='color: #6CA6E0;'>memora-official.com</a></p>
+    </div>
+</div>
+");
+							bodyBuilder.HtmlBody = htmlBody.ToString();
 
-                                            Trân trọng,
-                                            Đội ngũ Memora
-                                            Hotline: 0559 670 539
-                                            Email: memora940@gmail.com
-                                            ";
-						await _email.SendEmailAsync(user.Email, subject, message);
+							await _email.SendEmailAsync(user.Email, subject, bodyBuilder);
+						}
+						catch (Exception ex)
+						{
+							_logger.LogError(ex, "Failed to build or send invoice email for order {OrderId}.", fullOrder.Id);
+						}
 					}
 				}
 				return result;
 			}
-			return 1;
+			return 1; 
 		}
 	}
 }
