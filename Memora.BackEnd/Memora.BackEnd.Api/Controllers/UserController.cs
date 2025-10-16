@@ -20,6 +20,7 @@ namespace Memora.BackEnd.Api.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
             var tokens = await _userService.LoginAsync(request.Email, request.Password);
             if (tokens == null) return BadRequest("Invalid username or password");
+            if (tokens.Value.status == "Banned") return BadRequest("You are banned, contact us on website for more information");
             return Ok(new { accessToken = tokens.Value.accessToken, refreshToken = tokens.Value.refreshToken });
         }
 

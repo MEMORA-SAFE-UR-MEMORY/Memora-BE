@@ -109,7 +109,9 @@ Họ tên: {order.Fullname}
 Số điện thoại: {order.PhoneNumber}
 Địa chỉ: {order.Address}
 -------------------------------
-Vui lòng truy cập website Memora để tiến hành thanh toán đơn hàng của bạn.
+Vui lòng truy cập website Memora, login với tài khoản của bạn để tiến hành thanh toán và theo dõi đơn hàng:
+👉 https://memora-official.com/
+
 Trân trọng,
 Đội ngũ Memora
 ";
