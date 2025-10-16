@@ -67,7 +67,7 @@ namespace Memora.BackEnd.Api.Controllers
 
 			try
 			{
-				var webhookData = JsonSerializer.Deserialize<PayOsWebhookData>(webhookRequest.Data.ToString(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+				var webhookData = JsonSerializer.Deserialize<PayOsWebhookData>(webhookRequest.Data.GetRawText() ?? "{}");
 				if (webhookData == null)
 				{
 					_logger.LogWarning("Failed to deserialize webhook data.");
