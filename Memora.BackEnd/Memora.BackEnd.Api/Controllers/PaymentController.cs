@@ -53,7 +53,7 @@ namespace Memora.BackEnd.Api.Controllers
 		{
 			_logger.LogInformation("Received PayOS webhook: {WebhookBody}", JsonSerializer.Serialize(webhookRequest));
 
-			if (webhookRequest == null || webhookRequest.Data == null || string.IsNullOrEmpty(webhookRequest.Signature))
+			if (webhookRequest == null || string.IsNullOrEmpty(webhookRequest.Signature))
 			{
 				_logger.LogWarning("Invalid webhook request.");
 				return BadRequest(new { message = "Invalid request" });
