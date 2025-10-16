@@ -12,7 +12,7 @@ namespace Memora.BackEnd.Services.Dtos
 		public string Desc { get; set; } = string.Empty;
 
 		[JsonPropertyName("data")]
-		public JsonElement? Data { get; set; }
+		public JsonElement Data { get; set; }
 
 		[JsonPropertyName("signature")]
 		public string Signature { get; set; } = string.Empty;
