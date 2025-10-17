@@ -2,7 +2,7 @@
 
 namespace Memora.BackEnd.Services.Interfaces
 {
-	public interface IAlbumService
+	public interface IAlbumPageSlotService
 	{
 		Task<int> UpdateAsync(ImageRequest dto);
 	}

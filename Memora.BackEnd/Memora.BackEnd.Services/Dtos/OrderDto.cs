@@ -58,6 +58,7 @@ namespace Memora.BackEnd.Services.Dtos
         public Guid UserId { get; set; }
 
         [Required(ErrorMessage = "PhoneNumber là bắt buộc")]
+        [Phone]
         public string? PhoneNumber { get; set; }
 
         [Required(ErrorMessage = "Address là bắt buộc")]

@@ -2,8 +2,8 @@
 
 namespace Memora.BackEnd.Repositories.Interfaces
 {
-	public interface IAlbumRepository 
+	public interface IAlbumPageSlotRepository
 	{
-		public Task<Album?> GetByIdAsync(long id);
+		Task<int> UpdateAsync(AlbumPageSlot albumPageSlot);
 	}
 }
