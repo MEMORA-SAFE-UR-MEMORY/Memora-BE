@@ -19,8 +19,9 @@ namespace Memora.BackEnd.Services.Services
 		private readonly IConfiguration _configuration;
 		private readonly IPayOsService _payOsService;
 		private readonly ILogger<OrderService> _logger;
+		private readonly IAlbumRepository _albumRepository;
 
-		public OrderService(IOrderRepository orderRepository, IUserRepository userRepository, EmailService email, IConfiguration configuration, IPayOsService payOsService, ILogger<OrderService> logger)
+		public OrderService(IOrderRepository orderRepository, IUserRepository userRepository, EmailService email, IConfiguration configuration, IPayOsService payOsService, ILogger<OrderService> logger, IAlbumRepository albumRepository)
 		{
 			_orderRepository = orderRepository;
 			_userRepository = userRepository;
@@ -28,6 +29,7 @@ namespace Memora.BackEnd.Services.Services
 			_configuration = configuration;
 			_payOsService = payOsService;
 			_logger = logger;
+			_albumRepository = albumRepository;
 		}
 
 		public async Task<List<OrderDto>> GetAllAsync()
@@ -75,6 +77,17 @@ namespace Memora.BackEnd.Services.Services
 			var user = await _userRepository.GetByIdAsync(request.UserId);
 			if (user == null) return 0;
 
+			foreach (var album in request.OrderAlbums)
+			{
+				var item = await _albumRepository.GetByIdAsync(album.AlbumId);
+				if (item == null)
+				{
+					return -1;
+				}
+
+				if (item.UserId != request.UserId) return -1;
+			}
+
 			var order = new Order
 			{
 				Status = request.Status,
@@ -97,30 +110,47 @@ namespace Memora.BackEnd.Services.Services
 			{
 				if (user != null && !string.IsNullOrEmpty(user.Email))
 				{
-					string subject = "Xác nhận đơn hàng của bạn";
-					string message = $@"
-Xin chào {user.Fullname ?? user.Username},
-Cảm ơn bạn đã đặt hàng tại Memora! 🎉
--------------------------------
-Thông tin đơn hàng:
-Mã đơn hàng: #{order.Id}
-Ngày đặt: {DateTime.UtcNow:dd/MM/yyyy HH:mm}
-Tổng tiền: {order.TotalPrice:N0} VND
-Trạng thái: {order.Status}
--------------------------------
-Thông tin người nhận:
-Họ tên: {order.Fullname}
-Số điện thoại: {order.PhoneNumber}
-Địa chỉ: {order.Address}
--------------------------------
-Vui lòng truy cập website Memora, login với tài khoản của bạn để tiến hành thanh toán và theo dõi đơn hàng:
-👉 https://memora-official.com/
+					string subject = $"Memora - Xác nhận đơn hàng #{order.Id.ToString().Substring(0, 8)}";
+					var bodyBuilder = new BodyBuilder();
 
-Trân trọng,
-Đội ngũ Memora
-";
+					var htmlBody = new StringBuilder();
+					htmlBody.Append($@"
+<div style='font-family: Arial, sans-serif; color: #333; line-height: 1.6; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px; background-color: #FAF6FF;'>
+    <div style='text-align: center; margin-bottom: 20px;'>
+        <img src='https://yzzispiaqactvbvsjwcw.supabase.co/storage/v1/object/public/System/memora.png' alt='Memora Logo' style='height: 50px;'>
+        <h1 style='color: #C58AC9; font-size: 24px; margin-top: 10px;'>Memora – Triển lãm ký ức</h1>
+        <h2 style='color: #6CA6E0; font-size: 18px; font-weight: normal;'>XÁC NHẬN ĐƠN HÀNG</h2>
+    </div>
+    <p>Chào <strong>{user.Fullname ?? user.Username}</strong>,</p>
+    <p>Cảm ơn bạn đã đặt hàng tại Memora! Đơn hàng của bạn đã được ghi nhận và đang chờ thanh toán.</p>
+    
+    <div style='margin-top: 25px; margin-bottom: 25px; padding: 15px; border: 1px solid #D9D9FF; border-radius: 5px; background-color: #fff;'>
+        <h3 style='margin-top: 0; color: #4B4B8F;'>Chi tiết đơn hàng</h3>
+        <p><strong>Mã đơn hàng:</strong> #{order.Id.ToString().ToUpper()}</p>
+        <p><strong>Ngày đặt:</strong> {order.CreatedAt:dd/MM/yyyy HH:mm}</p>
+        <p><strong>Tổng tiền:</strong> {order.TotalPrice:N0} VND</p>
+        <p><strong>Trạng thái:</strong> {order.Status}</p>
+        <hr style='border: 0; border-top: 1px solid #eee; margin: 15px 0;'/>
+        <p><strong>Người nhận:</strong> {order.Fullname}</p>
+        <p><strong>Số điện thoại:</strong> {order.PhoneNumber}</p>
+        <p><strong>Địa chỉ:</strong> {order.Address}</p>
+    </div>
+    
+    <div style='text-align: center; margin: 30px 0;'>
+        <a href='https://memora-official.com/login' style='background-color: #C58AC9; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;'>TIẾN HÀNH THANH TOÁN</a>
+    </div>
 
-					await _email.SendEmailAsync(user.Email, subject, message);
+    <p>Bạn có thể đăng nhập vào tài khoản để xem chi tiết và thanh toán cho đơn hàng.</p>
+    <br/>
+    <p>Trân trọng,<br><strong>Đội ngũ Memora</strong></p>
+    <hr style='border: none; border-top: 1px solid #eee; margin-top: 20px;' />
+    <div style='text-align: center; font-size: 0.8em; color: #777;'>
+        <p>Hotline: 0559 670 539 | Email: memora940@gmail.com | Website: <a href='https://memora-official.com' style='color: #6CA6E0;'>memora-official.com</a></p>
+    </div>
+</div>");
+					bodyBuilder.HtmlBody = htmlBody.ToString();
+
+					await _email.SendEmailAsync(user.Email, subject, bodyBuilder);
 				}
 			}
 
@@ -214,9 +244,9 @@ Trân trọng,
 			var order = await _orderRepository.GetByPayOsOrderCodeAsync(orderCode);
 			if (order == null) return 0;
 
-			if (code == "00") 
+			if (code == "00")
 			{
-				if (order.Status == "Đã thanh toán") return 1; 
+				if (order.Status == "Đã thanh toán") return 1;
 
 				var result = await _orderRepository.UpdateStatusByPayOsOrderCodeAsync(orderCode, "Đã thanh toán");
 
@@ -311,7 +341,7 @@ Trân trọng,
 				}
 				return result;
 			}
-			return 1; 
+			return 1;
 		}
 	}
 }

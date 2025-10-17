@@ -5,11 +5,11 @@ using Memora.BackEnd.Services.Interfaces;
 
 namespace Memora.BackEnd.Services.Services
 {
-	public class AlbumService : IAlbumService
+	public class AlbumPageSlotService : IAlbumPageSlotService
 	{
-		private readonly IAlbumRepository _repo;
+		private readonly IAlbumPageSlotRepository _repo;
 		private readonly ISupabaseFileService _supabaseFileService;
-		public AlbumService(IAlbumRepository repo, ISupabaseFileService supabaseFileService)
+		public AlbumPageSlotService(IAlbumPageSlotRepository repo, ISupabaseFileService supabaseFileService)
 		{
 			_repo = repo;
 			_supabaseFileService = supabaseFileService;

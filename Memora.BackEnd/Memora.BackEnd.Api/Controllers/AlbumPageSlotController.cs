@@ -6,10 +6,10 @@ namespace Memora.BackEnd.Api.Controllers
 {
 	[Route("api/[controller]")]
 	[ApiController]
-	public class AlbumController : ControllerBase
+	public class AlbumPageSlotController : ControllerBase
 	{
-		private readonly IAlbumService _albumService;
-		public AlbumController(IAlbumService albumService)
+		private readonly IAlbumPageSlotService _albumService;
+		public AlbumPageSlotController(IAlbumPageSlotService albumService)
 		{
 			_albumService = albumService;
 		}

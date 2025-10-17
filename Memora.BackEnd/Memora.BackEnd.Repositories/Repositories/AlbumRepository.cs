@@ -7,20 +7,13 @@ namespace Memora.BackEnd.Repositories.Repositories
 	public class AlbumRepository : IAlbumRepository
 	{
 		private readonly PostgresContext _context;
-
 		public AlbumRepository(PostgresContext context)
 		{
 			_context = context;
 		}
-		public async Task<int> UpdateAsync(AlbumPageSlot albumPageSlot)
+		public async Task<Album?> GetByIdAsync(long id)
 		{
-			var existing = await _context.AlbumPageSlots.FindAsync(albumPageSlot.Id);
-			if (existing == null)
-				return -1;
-
-			existing.PhotoUrl = albumPageSlot.PhotoUrl;
-			_context.Update(existing);
-			return await _context.SaveChangesAsync();
+			return await _context.Albums.FindAsync(id);
 		}
 	}
 }
