@@ -19,8 +19,8 @@ namespace Memora.BackEnd.Api.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             var tokens = await _userService.LoginAsync(request.Email, request.Password);
-            if (tokens == null) return BadRequest("Invalid username or password");
-            if (tokens.Value.status == "Banned") return BadRequest("You are banned, contact us on website for more information");
+            if (tokens == null) return BadRequest("Email hoặc mật khẩu không hợp lệ");
+            if (tokens.Value.status == "Banned") return BadRequest("Bạn đã bị cấm, hãy liên hệ với chúng tôi trên trang web để biết thêm thông tin");
             return Ok(new { accessToken = tokens.Value.accessToken, refreshToken = tokens.Value.refreshToken });
         }
 
@@ -79,8 +79,8 @@ namespace Memora.BackEnd.Api.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             var result = await _userService.SignUpAsync(request.Email, request.Username, request.PasswordHash);
-            if (result == -1) return BadRequest("Username or Email already exists");
-            return Ok("User registered");
+            if (result == -1) return BadRequest("Tên người dùng hoặc Email đã tồn tại");
+            return Ok("Đăng kí thành công");
         }
 
         // Request password reset
