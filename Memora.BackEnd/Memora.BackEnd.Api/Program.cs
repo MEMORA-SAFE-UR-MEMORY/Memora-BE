@@ -104,6 +104,8 @@ builder.Services.AddScoped<ISupabaseFileService, SupabaseFileService>();
 
 builder.Services.AddScoped<EmailService>();
 
+builder.Services.AddScoped<IGeminiService, GeminiService>();
+
 builder.Services.AddHttpClient<IPayOsService, PayOsService>((serviceProvider, client) =>
 {
 	var payOsSettings = serviceProvider.GetRequiredService<IConfiguration>().GetSection("PayOS").Get<PayOSSettings>()
