@@ -286,7 +286,10 @@ namespace Memora.BackEnd.Services.Services
 							htmlBody.Append(fullOrder.PayOsOrderCode);
 							htmlBody.Append(@"</p>
         <p><strong>Ngày thanh toán:</strong> ");
-							htmlBody.Append(DateTime.Now.ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture));
+							//htmlBody.Append(DateTime.Now.ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture));
+							var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
+	TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
+							htmlBody.Append(vietnamTime.ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture));
 							htmlBody.Append(@"</p>
         <table style='width: 100%; border-collapse: collapse; margin-top: 15px;'>
             <thead style='background-color: #f2e9ff;'>
