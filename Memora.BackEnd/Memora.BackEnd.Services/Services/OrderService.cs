@@ -96,6 +96,7 @@ namespace Memora.BackEnd.Services.Services
 				Address = request.Address,
 				Fullname = request.Fullname,
 				PhoneNumber = request.PhoneNumber,
+				CreatedAt = DateTime.UtcNow,
 				OrderAlbums = request.OrderAlbums.Select(oa => new OrderAlbum
 				{
 					AlbumId = oa.AlbumId,
@@ -127,7 +128,7 @@ namespace Memora.BackEnd.Services.Services
     <div style='margin-top: 25px; margin-bottom: 25px; padding: 15px; border: 1px solid #D9D9FF; border-radius: 5px; background-color: #fff;'>
         <h3 style='margin-top: 0; color: #4B4B8F;'>Chi tiết đơn hàng</h3>
         <p><strong>Mã đơn hàng:</strong> #{order.Id.ToString().ToUpper()}</p>
-        <p><strong>Ngày đặt:</strong> {order.CreatedAt:dd/MM/yyyy HH:mm}</p>
+        <p><strong>Ngày đặt:</strong> {order.CreatedAt.ToLocalTime():dd/MM/yyyy HH:mm}</p>
         <p><strong>Tổng tiền:</strong> {order.TotalPrice:N0} VND</p>
         <p><strong>Trạng thái:</strong> {order.Status}</p>
         <hr style='border: 0; border-top: 1px solid #eee; margin: 15px 0;'/>
@@ -286,10 +287,7 @@ namespace Memora.BackEnd.Services.Services
 							htmlBody.Append(fullOrder.PayOsOrderCode);
 							htmlBody.Append(@"</p>
         <p><strong>Ngày thanh toán:</strong> ");
-							//htmlBody.Append(DateTime.Now.ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture));
-							var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
-	TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
-							htmlBody.Append(vietnamTime.ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture));
+							htmlBody.Append(DateTime.Now.ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture));
 							htmlBody.Append(@"</p>
         <table style='width: 100%; border-collapse: collapse; margin-top: 15px;'>
             <thead style='background-color: #f2e9ff;'>
