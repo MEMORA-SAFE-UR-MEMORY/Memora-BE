@@ -50,7 +50,6 @@ namespace Memora.BackEnd.Services.Services
             var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
             var response = await httpClient.PostAsync(apiUrl, content);
 
-            // ❌ Nếu Gemini trả lỗi -> throw -> Controller sẽ trả BadRequest
             if (!response.IsSuccessStatusCode)
             {
                 var errorJson = await response.Content.ReadAsStringAsync();
@@ -69,14 +68,7 @@ namespace Memora.BackEnd.Services.Services
                 && parts.GetArrayLength() > 0
                 && parts[0].TryGetProperty("text", out var textElem))
             {
-                var text = textElem.GetString() ?? "";
-
-                // Giới hạn 40 từ
-                var words = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                if (words.Length > 40)
-                    text = string.Join(" ", words.Take(40)) + "...";
-
-                return text;
+                return textElem.GetString() ?? "";
             }
 
             throw new Exception("Gemini trả về phản hồi không hợp lệ.");
