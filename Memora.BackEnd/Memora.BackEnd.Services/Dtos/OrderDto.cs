@@ -11,6 +11,8 @@ namespace Memora.BackEnd.Services.Dtos
         public long Quantity { get; set; }
 
         public decimal Price { get; set; }
+
+        public string? Type { get; set; }
     }
 
     public class AlbumDto
@@ -81,6 +83,7 @@ namespace Memora.BackEnd.Services.Dtos
 
         [Range(1, double.MaxValue, ErrorMessage = "Giá phải lớn hơn 0")]
         public decimal Price { get; set; }
+        public string? Type { get; set; }
     }
 
     // request khi update

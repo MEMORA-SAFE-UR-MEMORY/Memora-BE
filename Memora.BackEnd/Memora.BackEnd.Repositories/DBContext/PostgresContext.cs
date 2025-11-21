@@ -50,6 +50,8 @@ public partial class PostgresContext : DbContext
 
     public virtual DbSet<RoomItem> RoomItems { get; set; }
 
+    public virtual DbSet<RoomShare> RoomShares { get; set; }
+
     public virtual DbSet<SlotMemory> SlotMemories { get; set; }
 
     public virtual DbSet<Template> Templates { get; set; }
@@ -74,6 +76,10 @@ public partial class PostgresContext : DbContext
 
     public virtual DbSet<Wallet> Wallets { get; set; }
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseNpgsql("User Id=postgres.yzzispiaqactvbvsjwcw;Password=Hellomemora12345@;Server=aws-0-ap-southeast-1.pooler.supabase.com;Port=6543;Database=postgres;SSL Mode=Require;Trust Server Certificate=true;Keepalive=30;Timeout=15;CommandTimeout=30;Pooling=false");
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
@@ -81,13 +87,16 @@ public partial class PostgresContext : DbContext
             .HasPostgresEnum("auth", "code_challenge_method", new[] { "s256", "plain" })
             .HasPostgresEnum("auth", "factor_status", new[] { "unverified", "verified" })
             .HasPostgresEnum("auth", "factor_type", new[] { "totp", "webauthn", "phone" })
+            .HasPostgresEnum("auth", "oauth_authorization_status", new[] { "pending", "approved", "denied", "expired" })
+            .HasPostgresEnum("auth", "oauth_client_type", new[] { "public", "confidential" })
             .HasPostgresEnum("auth", "oauth_registration_type", new[] { "dynamic", "manual" })
+            .HasPostgresEnum("auth", "oauth_response_type", new[] { "code" })
             .HasPostgresEnum("auth", "one_time_token_type", new[] { "confirmation_token", "reauthentication_token", "recovery_token", "email_change_token_new", "email_change_token_current", "phone_change_token" })
             .HasPostgresEnum("net", "request_status", new[] { "PENDING", "SUCCESS", "ERROR" })
             .HasPostgresEnum("page_role", new[] { "front_cover", "inner", "back_cover" })
             .HasPostgresEnum("realtime", "action", new[] { "INSERT", "UPDATE", "DELETE", "TRUNCATE", "ERROR" })
             .HasPostgresEnum("realtime", "equality_op", new[] { "eq", "neq", "lt", "lte", "gt", "gte", "in" })
-            .HasPostgresEnum("storage", "buckettype", new[] { "STANDARD", "ANALYTICS" })
+            .HasPostgresEnum("storage", "buckettype", new[] { "STANDARD", "ANALYTICS", "VECTOR" })
             .HasPostgresExtension("extensions", "pg_net")
             .HasPostgresExtension("extensions", "pg_stat_statements")
             .HasPostgresExtension("extensions", "pgcrypto")
@@ -432,6 +441,7 @@ public partial class PostgresContext : DbContext
             entity.Property(e => e.OrderId).HasColumnName("order_id");
             entity.Property(e => e.Price).HasColumnName("price");
             entity.Property(e => e.Quantity).HasColumnName("quantity");
+            entity.Property(e => e.Type).HasColumnName("type");
 
             entity.HasOne(d => d.Album).WithMany(p => p.OrderAlbums)
                 .HasForeignKey(d => d.AlbumId)
@@ -555,11 +565,40 @@ public partial class PostgresContext : DbContext
                 .HasConstraintName("room_items_room_id_fkey");
         });
 
+        modelBuilder.Entity<RoomShare>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("room_share_pkey");
+
+            entity.ToTable("room_share");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("created_at");
+            entity.Property(e => e.InvitedBy).HasColumnName("invited_by");
+            entity.Property(e => e.InvitedUserId).HasColumnName("invited_user_id");
+            entity.Property(e => e.RoomId).HasColumnName("room_id");
+
+            entity.HasOne(d => d.InvitedByNavigation).WithMany(p => p.RoomShareInvitedByNavigations)
+                .HasForeignKey(d => d.InvitedBy)
+                .HasConstraintName("room_share_invited_by_fkey");
+
+            entity.HasOne(d => d.InvitedUser).WithMany(p => p.RoomShareInvitedUsers)
+                .HasForeignKey(d => d.InvitedUserId)
+                .HasConstraintName("room_share_invited_user_id_fkey");
+
+            entity.HasOne(d => d.Room).WithMany(p => p.RoomShares)
+                .HasForeignKey(d => d.RoomId)
+                .HasConstraintName("room_share_room_id_fkey");
+        });
+
         modelBuilder.Entity<SlotMemory>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("slot_memories_pkey");
 
             entity.ToTable("slot_memories");
+
+            entity.HasIndex(e => new { e.RoomItemId, e.FrameSlotId }, "slot_memories_room_item_slot_unique").IsUnique();
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.FrameSlotId).HasColumnName("frame_slot_id");

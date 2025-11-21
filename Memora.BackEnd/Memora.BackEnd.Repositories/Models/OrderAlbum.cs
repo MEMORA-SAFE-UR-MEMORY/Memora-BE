@@ -17,6 +17,8 @@ public partial class OrderAlbum
 
     public Guid OrderId { get; set; }
 
+    public string? Type { get; set; }
+
     public virtual Album Album { get; set; } = null!;
 
     public virtual Order Order { get; set; } = null!;

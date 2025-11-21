@@ -39,6 +39,10 @@ public partial class User
 
     public virtual Role Role { get; set; } = null!;
 
+    public virtual ICollection<RoomShare> RoomShareInvitedByNavigations { get; set; } = new List<RoomShare>();
+
+    public virtual ICollection<RoomShare> RoomShareInvitedUsers { get; set; } = new List<RoomShare>();
+
     public virtual ICollection<Room> Rooms { get; set; } = new List<Room>();
 
     public virtual ICollection<UserEntitlement> UserEntitlements { get; set; } = new List<UserEntitlement>();

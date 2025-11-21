@@ -67,7 +67,8 @@ namespace Memora.BackEnd.Services.Services
 						}
 					},
 					Price = oa.Price,
-					Quantity = oa.Quantity
+					Quantity = oa.Quantity,
+					Type = oa.Type,
 				}).ToList()
 			}).ToList();
 		}
@@ -101,7 +102,8 @@ namespace Memora.BackEnd.Services.Services
 				{
 					AlbumId = oa.AlbumId,
 					Quantity = oa.Quantity,
-					Price = oa.Price
+					Price = oa.Price,
+					Type = oa.Type
 				}).ToList()
 			};
 
@@ -208,7 +210,8 @@ namespace Memora.BackEnd.Services.Services
 						}
 					},
 					Price = oa.Price,
-					Quantity = oa.Quantity
+					Quantity = oa.Quantity,
+					Type = oa.Type,
 				}).ToList(),
 			};
 		}
